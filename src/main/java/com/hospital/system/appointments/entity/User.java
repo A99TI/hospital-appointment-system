@@ -37,6 +37,14 @@ public class User implements UserDetails {
     @CollectionTable(name = "user_authorities", joinColumns = @JoinColumn(name = "user_id"))
     private List<Authority> authorities;
 
+    public User() {
+    }
+
+    public User(String email, String password) {
+        this.email = email;
+        this.password = password;
+    }
+
     @Override
     public String getUsername() {
         return email;
@@ -66,7 +74,6 @@ public class User implements UserDetails {
     public String getPassword() {
         return password;
     }
-
 
     public Date getCreatedAt() {
         return createdAt;
