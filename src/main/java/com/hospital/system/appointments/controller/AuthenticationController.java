@@ -1,6 +1,8 @@
 package com.hospital.system.appointments.controller;
 
+import com.hospital.system.appointments.request.AuthenticationRequest;
 import com.hospital.system.appointments.request.RegisterRequest;
+import com.hospital.system.appointments.response.AuthenticationResponse;
 import com.hospital.system.appointments.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,10 +21,17 @@ public class AuthenticationController {
         this.authenticationService = authenticationService;
     }
 
-    @Operation()
+    @Operation(summary = "Register a user", description = "Create a new user in database")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/register")
     public void register(@Valid @RequestBody RegisterRequest registerRequest) throws  Exception{
         authenticationService.register(registerRequest);
+    }
+
+    @Operation(summary = "Login a user", description = "Enter Username and password to get token")
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/login")
+    public AuthenticationResponse login (@Valid @RequestBody AuthenticationRequest authenticationRequest){
+        return authenticationService.login(authenticationRequest);
     }
 }
