@@ -1,0 +1,31 @@
+package com.hospital.system.appointments.controller;
+
+
+import com.hospital.system.appointments.response.UserResponse;
+import com.hospital.system.appointments.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/users")
+@Tag(name = "Users REST API Endpoints", description = "Operations related to info about current user")
+public class UserController {
+
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @Operation(summary = "Get user info", description = "Get information about the current user")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/info")
+    public UserResponse getUserInfo() throws Exception{
+        return userService.getUser();
+    }
+}
