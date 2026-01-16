@@ -6,10 +6,7 @@ import com.hospital.system.appointments.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
@@ -27,5 +24,13 @@ public class UserController {
     @GetMapping("/info")
     public UserResponse getUserInfo() throws Exception{
         return userService.getUser();
+    }
+
+
+    @Operation(summary = "Delete a user", description = "Delete a user from the DB")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping
+    public void deleteUser() throws Exception{
+        userService.deleteUser();
     }
 }

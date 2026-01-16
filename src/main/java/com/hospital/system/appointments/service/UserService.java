@@ -4,4 +4,5 @@ import com.hospital.system.appointments.response.UserResponse;
 
 public interface UserService {
     UserResponse getUser() throws Exception;
+    void deleteUser() throws Exception;
 }

@@ -4,10 +4,12 @@ import com.hospital.system.appointments.entity.Authority;
 import com.hospital.system.appointments.entity.User;
 import com.hospital.system.appointments.repository.UserRepository;
 import com.hospital.system.appointments.response.UserResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.file.AccessDeniedException;
 
@@ -37,5 +39,37 @@ public class UserServiceImpl implements UserService {
                 user.getEmail(),
                 user.getAuthorities().stream().map(auth -> (Authority) auth).toList()
         );
+    }
+
+    @Override
+    public void deleteUser () throws Exception {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if(authentication == null || !authentication.isAuthenticated() ||
+                authentication.getPrincipal().equals("anonymousUser")){
+            throw new AccessDeniedException("Authentication Required");
+        }
+
+        User user = (User) authentication.getPrincipal();
+
+        if (isLastAdmin(user)){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin Cannot delete itself");
+        }
+
+        userRepository.delete(user);
+
+
+    }
+
+    private boolean isLastAdmin(User user){
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+
+        if (isAdmin){
+            long adminCount = userRepository.countAdminUsers();
+            return adminCount <= 1;
+        }
+
+        return false;
     }
 }
