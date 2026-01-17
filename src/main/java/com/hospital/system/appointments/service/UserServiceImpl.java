@@ -3,11 +3,13 @@ package com.hospital.system.appointments.service;
 import com.hospital.system.appointments.entity.Authority;
 import com.hospital.system.appointments.entity.User;
 import com.hospital.system.appointments.repository.UserRepository;
+import com.hospital.system.appointments.request.PasswordUpdateRequest;
 import com.hospital.system.appointments.response.UserResponse;
 import com.hospital.system.appointments.util.FindAuthenticatedUser;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -19,10 +21,12 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final FindAuthenticatedUser findAuthenticatedUser;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, FindAuthenticatedUser findAuthenticatedUser) {
+    public UserServiceImpl(UserRepository userRepository, FindAuthenticatedUser findAuthenticatedUser, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.findAuthenticatedUser = findAuthenticatedUser;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -47,7 +51,6 @@ public class UserServiceImpl implements UserService {
 
         userRepository.delete(user);
 
-
     }
 
     private boolean isLastAdmin(User user){
@@ -61,4 +64,38 @@ public class UserServiceImpl implements UserService {
 
         return false;
     }
+
+    @Override
+    public void updatePassword(PasswordUpdateRequest passwordUpdateRequest) {
+        User user = findAuthenticatedUser.getAuthenticatedUser();
+
+        if (!isOldPasswordCorrect(passwordUpdateRequest.getOldPassword(), user.getPassword())){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
+        }
+
+        if (!isNewPasswordConfirmed(passwordUpdateRequest.getNewPassword(), passwordUpdateRequest.getNewPasswordConfirmation())){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New password does not match");
+        }
+
+        if (!isNewPasswordDifferent(passwordUpdateRequest.getOldPassword(), passwordUpdateRequest.getNewPassword())){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Old and new password must be different");
+        }
+
+        user.setPassword(passwordEncoder.encode(passwordUpdateRequest.getNewPassword()));
+        userRepository.save(user);
+    }
+
+    private boolean isOldPasswordCorrect(String oldPassword, String currentPassword){
+        return passwordEncoder.matches(oldPassword, currentPassword);
+    }
+
+    private boolean isNewPasswordConfirmed(String newPassword, String newPasswordConfirmation){
+        return newPassword.equals(newPasswordConfirmation);
+    }
+
+    private boolean isNewPasswordDifferent(String oldPassword, String newPassword){
+        return !oldPassword.equals(newPassword);
+    }
+
+
 }
