@@ -64,6 +64,7 @@ public class SecurityConfig {
                 configurer
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**",
                                 "/swagger-resources/**", "/webjars/**", "/docs", "/api/auth/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated());
 
         http.csrf(AbstractHttpConfigurer::disable);
