@@ -2,12 +2,12 @@ package com.hospital.system.appointments.service;
 
 import com.hospital.system.appointments.entity.Authority;
 import com.hospital.system.appointments.entity.User;
+import com.hospital.system.appointments.exception.ConflictException;
+import com.hospital.system.appointments.exception.NotFoundException;
 import com.hospital.system.appointments.repository.UserRepository;
 import com.hospital.system.appointments.response.UserResponse;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,9 +65,9 @@ public class AdminServiceImpl implements AdminService{
     private User getNonAdminUser(long userId){
         Optional<User> user = userRepository.findById(userId);
 
-        if (user.isEmpty()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User does not exist");
+        if (user.isEmpty()) throw new NotFoundException("User does not exist");
         if (user.get().getAuthorities().stream().anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()))) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is an admin");
+            throw new ConflictException("User is an admin");
         }
 
         return user.get();
