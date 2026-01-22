@@ -2,19 +2,15 @@ package com.hospital.system.appointments.service;
 
 import com.hospital.system.appointments.entity.Authority;
 import com.hospital.system.appointments.entity.User;
+import com.hospital.system.appointments.exception.BadRequestException;
+import com.hospital.system.appointments.exception.ForbiddenException;
 import com.hospital.system.appointments.repository.UserRepository;
 import com.hospital.system.appointments.request.PasswordUpdateRequest;
 import com.hospital.system.appointments.response.UserResponse;
 import com.hospital.system.appointments.util.FindAuthenticatedUser;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.nio.file.AccessDeniedException;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -46,7 +42,7 @@ public class UserServiceImpl implements UserService {
         User user =  findAuthenticatedUser.getAuthenticatedUser();
 
         if (isLastAdmin(user)){
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin Cannot delete itself");
+            throw new ForbiddenException("Admin cannot delete itself");
         }
 
         userRepository.delete(user);
@@ -70,15 +66,15 @@ public class UserServiceImpl implements UserService {
         User user = findAuthenticatedUser.getAuthenticatedUser();
 
         if (!isOldPasswordCorrect(passwordUpdateRequest.getOldPassword(), user.getPassword())){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
+            throw new BadRequestException("Current password is incorrect");
         }
 
         if (!isNewPasswordConfirmed(passwordUpdateRequest.getNewPassword(), passwordUpdateRequest.getNewPasswordConfirmation())){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New password does not match");
+            throw new BadRequestException("New password does not match");
         }
 
         if (!isNewPasswordDifferent(passwordUpdateRequest.getOldPassword(), passwordUpdateRequest.getNewPassword())){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Old and new password must be different");
+            throw new BadRequestException("Old and new password must be different");
         }
 
         user.setPassword(passwordEncoder.encode(passwordUpdateRequest.getNewPassword()));
