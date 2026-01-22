@@ -36,7 +36,7 @@ public class AdminServiceImpl implements AdminService{
         User user = getNonAdminUser(userId);
 
         List<Authority> authorities = new ArrayList<>();
-        authorities.add(new Authority("ROLE_EMPLOYEE"));
+        authorities.add(new Authority("ROLE_USER"));
         authorities.add(new Authority("ROLE_ADMIN"));
         user.setAuthorities(authorities);
 

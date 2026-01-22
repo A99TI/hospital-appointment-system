@@ -78,7 +78,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         List<Authority> authorities = new ArrayList<>();
 
         if (isFirstUser) authorities.add(new Authority("ROLE_ADMIN"));
-        authorities.add(new Authority("ROLE_EMPLOYEE"));
+        authorities.add(new Authority("ROLE_USER"));
 
         return authorities;
     }
