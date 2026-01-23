@@ -2,46 +2,40 @@ package com.hospital.system.appointments.service;
 
 import com.hospital.system.appointments.entity.Authority;
 import com.hospital.system.appointments.entity.User;
-import com.hospital.system.appointments.exception.ConflictException;
-import com.hospital.system.appointments.exception.NotFoundException;
 import com.hospital.system.appointments.repository.UserRepository;
 import com.hospital.system.appointments.response.UserResponse;
 import com.hospital.system.appointments.util.FindNonAdminUser;
 import com.hospital.system.appointments.util.UserMapper;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.StreamSupport;
 
-@Service
-public class AdminServiceImpl implements AdminService{
+public class UserRoleAdminServiceImpl implements UserRoleAdminService{
 
     private final UserRepository userRepository;
     private final FindNonAdminUser findNonAdminUser;
     private final UserMapper userMapper;
 
-    public AdminServiceImpl(UserRepository userRepository, FindNonAdminUser findNonAdminUser, UserMapper userMapper) {
+    public UserRoleAdminServiceImpl(UserRepository userRepository, FindNonAdminUser findNonAdminUser, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.findNonAdminUser = findNonAdminUser;
         this.userMapper = userMapper;
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<UserResponse> getAllUsers() {
-        return StreamSupport.stream(userRepository.findAll().spliterator(), false)
-                .map(userMapper::toUserResponse).toList();
-    }
 
     @Override
     @Transactional
-    public void deleteNonAdminUser(long userId) {
+    public UserResponse promoteToAdmin(long userId) {
         User user = findNonAdminUser.getNonAdminUser(userId);
 
-        userRepository.delete(user);
+        List<Authority> authorities = new ArrayList<>();
+        authorities.add(new Authority("ROLE_USER"));
+        authorities.add(new Authority("ROLE_ADMIN"));
+        user.setAuthorities(authorities);
 
+        User savedUser = userRepository.save(user);
+
+        return userMapper.toUserResponse(savedUser);
     }
 }

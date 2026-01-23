@@ -1,0 +1,29 @@
+package com.hospital.system.appointments.controller;
+
+import com.hospital.system.appointments.response.UserResponse;
+import com.hospital.system.appointments.service.UserRoleAdminService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Min;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+@Tag(name = "Admin Useer Promotion REST API Endpoint", description = "Operations related to a admin")
+@RestController
+@RequestMapping("/api/admin/users")
+public class UserRoleAdminController {
+
+    public final UserRoleAdminService userRoleAdminService;
+
+    public UserRoleAdminController(UserRoleAdminService userRoleAdminService) {
+        this.userRoleAdminService = userRoleAdminService;
+    }
+
+    @Operation(summary = "Promote user to admin", description = "Promote user to admin role")
+    @ResponseStatus(HttpStatus.OK)
+    @PutMapping("/{userId}/promote-to-admin")
+    public UserResponse promoteToAdmin(@PathVariable @Min(1) long userId){
+        return userRoleAdminService.promoteToAdmin(userId);
+    }
+
+}
