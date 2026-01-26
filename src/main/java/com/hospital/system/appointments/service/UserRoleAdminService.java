@@ -4,4 +4,5 @@ import com.hospital.system.appointments.response.UserResponse;
 
 public interface UserRoleAdminService {
     UserResponse promoteToAdmin(long userId);
+
 }
