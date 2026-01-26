@@ -26,4 +26,6 @@ public class UserRoleAdminController {
         return userRoleAdminService.promoteToAdmin(userId);
     }
 
+
+
 }

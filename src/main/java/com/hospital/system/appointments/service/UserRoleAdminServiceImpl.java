@@ -23,7 +23,6 @@ public class UserRoleAdminServiceImpl implements UserRoleAdminService{
         this.userMapper = userMapper;
     }
 
-
     @Override
     @Transactional
     public UserResponse promoteToAdmin(long userId) {
