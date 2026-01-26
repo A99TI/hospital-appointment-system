@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "Admin Useer Promotion REST API Endpoint", description = "Operations related to a admin")
+@Tag(name = "Admin User Promotion REST API Endpoint", description = "Operations related to a admin")
 @RestController
 @RequestMapping("/api/admin/users")
 public class UserRoleAdminController {

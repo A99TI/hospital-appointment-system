@@ -30,7 +30,7 @@ public class AdminController {
     @Operation(summary = "Delete a user", description = "Delete a non-admin user from the system")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/users/{userId}")
-    public void getAllUsers(@PathVariable @Min(1) long userId){
+    public void deleteUser(@PathVariable @Min(1) long userId){
         adminService.deleteNonAdminUser(userId);
     }
 
