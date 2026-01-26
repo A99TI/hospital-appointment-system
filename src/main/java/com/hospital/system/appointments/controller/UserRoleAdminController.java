@@ -1,9 +1,12 @@
 package com.hospital.system.appointments.controller;
 
+import com.hospital.system.appointments.request.DoctorRequest;
+import com.hospital.system.appointments.response.DoctorResponse;
 import com.hospital.system.appointments.response.UserResponse;
 import com.hospital.system.appointments.service.UserRoleAdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -27,5 +30,11 @@ public class UserRoleAdminController {
     }
 
 
+    @Operation(summary = "Promote user to doctor", description = "Promote user to doctor role")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PutMapping("/{userId}/promote-to-doctor")
+    public DoctorResponse promoteToDoctor(@PathVariable @Min(1) long userId, @Valid @RequestBody DoctorRequest doctorRequest){
+        return userRoleAdminService.promoteToDoctor(userId, doctorRequest);
+    }
 
 }
