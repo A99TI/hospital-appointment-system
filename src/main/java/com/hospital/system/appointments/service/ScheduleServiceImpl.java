@@ -2,9 +2,11 @@ package com.hospital.system.appointments.service;
 
 import com.hospital.system.appointments.entity.Doctor;
 import com.hospital.system.appointments.entity.Schedule;
+import com.hospital.system.appointments.entity.User;
 import com.hospital.system.appointments.enums.DayOfWeek;
 import com.hospital.system.appointments.exception.BadRequestException;
 import com.hospital.system.appointments.exception.ConflictException;
+import com.hospital.system.appointments.exception.ForbiddenException;
 import com.hospital.system.appointments.exception.NotFoundException;
 import com.hospital.system.appointments.repository.DoctorRepository;
 import com.hospital.system.appointments.repository.ScheduleRepository;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class ScheduleServiceImpl implements ScheduleService{
@@ -35,7 +38,14 @@ public class ScheduleServiceImpl implements ScheduleService{
     public ScheduleResponse createSchedule(long doctorId, ScheduleRequest request) {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new NotFoundException("Doctor not found with id: " + doctorId));
-        
+
+        User user = findAuthenticatedUser.getAuthenticatedUser();
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+
+        if (!isAdmin && !Objects.equals(user.getId(), doctor.getUser().getId())) {
+            throw new ForbiddenException("Cannot make schedule for this user");
+        }
 
         if (!doctor.getActive()){
             throw new BadRequestException("Cannot create schedule for inactive doctor");
@@ -84,13 +94,13 @@ public class ScheduleServiceImpl implements ScheduleService{
         }
     }
 
-    private void checkForOverLaps(Doctor doctor, DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endtime, Long excludeScheduleId){
+    private void checkForOverLaps(Doctor doctor, DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime, Long excludeScheduleId){
         List<Schedule> existingSchedules = excludeScheduleId == null
                 ? scheduleRepository.findByDoctorIdAndDayOfWeek(doctor.getId(), dayOfWeek)
                 : scheduleRepository.findByDoctorIdAndDayOfWeekAndIdNot(doctor.getId(), dayOfWeek, excludeScheduleId);
 
         for (Schedule existing: existingSchedules){
-            if (hasOverLaps(startTime, endtime, existing.getStartTime(), existing.getEndTime())){
+            if (hasOverLaps(startTime, endTime, existing.getStartTime(), existing.getEndTime())){
                 throw new ConflictException(
                         String.format(
                                 "Schedule overlaps with existing schedule: %s %s-%s",
