@@ -9,7 +9,7 @@ import com.hospital.system.appointments.request.DoctorRequest;
 import com.hospital.system.appointments.response.DoctorResponse;
 import com.hospital.system.appointments.response.UserResponse;
 import com.hospital.system.appointments.util.FindNonAdminUser;
-import com.hospital.system.appointments.util.UserMapper;
+import com.hospital.system.appointments.util.ResponseMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,13 +21,13 @@ public class UserRoleAdminServiceImpl implements UserRoleAdminService {
 
     private final UserRepository userRepository;
     private final FindNonAdminUser findNonAdminUser;
-    private final UserMapper userMapper;
+    private final ResponseMapper responseMapper;
     private final DoctorRepository doctorRepository;
 
-    public UserRoleAdminServiceImpl(UserRepository userRepository, FindNonAdminUser findNonAdminUser, UserMapper userMapper, DoctorRepository doctorRepository) {
+    public UserRoleAdminServiceImpl(UserRepository userRepository, FindNonAdminUser findNonAdminUser, ResponseMapper responseMapper, DoctorRepository doctorRepository) {
         this.userRepository = userRepository;
         this.findNonAdminUser = findNonAdminUser;
-        this.userMapper = userMapper;
+        this.responseMapper = responseMapper;
         this.doctorRepository = doctorRepository;
     }
 
@@ -43,7 +43,7 @@ public class UserRoleAdminServiceImpl implements UserRoleAdminService {
 
         User savedUser = userRepository.save(user);
 
-        return userMapper.toUserResponse(savedUser);
+        return responseMapper.toUserResponse(savedUser);
     }
 
     @Override
@@ -67,7 +67,7 @@ public class UserRoleAdminServiceImpl implements UserRoleAdminService {
         doctor.setActive(active);
 
         Doctor savedDoctor = doctorRepository.save(doctor);
-        return userMapper.toDoctorResponse(savedDoctor);
+        return responseMapper.toDoctorResponse(savedDoctor);
 
     }
 }

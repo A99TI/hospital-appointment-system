@@ -8,7 +8,7 @@ import com.hospital.system.appointments.response.UserResponse;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UserMapperImpl implements UserMapper{
+public class ResponseMapperImpl implements ResponseMapper {
     @Override
     public UserResponse toUserResponse(User user) {
         return new UserResponse(
