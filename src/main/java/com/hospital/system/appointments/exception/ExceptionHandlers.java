@@ -5,10 +5,14 @@ import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class ExceptionHandlers {
@@ -51,9 +55,8 @@ public class ExceptionHandlers {
         String message = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .findFirst()
                 .map(err -> err.getField() + ": " + err.getDefaultMessage())
-                .orElse("Validation failed");
+                .collect(Collectors.joining(", "));
 
         return buildResponseEntity(HttpStatus.BAD_REQUEST, message, request.getRequestURI());
     }
@@ -99,5 +102,23 @@ public class ExceptionHandlers {
         );
 
         return ResponseEntity.status(status).body(error);
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ExceptionResponses> handleHandlerMethodValidation(
+            HandlerMethodValidationException ex,
+            HttpServletRequest request
+    ) {
+        String message = ex.getAllErrors()
+                .stream()
+                .map(error -> {
+                    if (error instanceof FieldError fieldError) {
+                        return fieldError.getField() + ": " + fieldError.getDefaultMessage();
+                    }
+                    return error.getDefaultMessage();
+                })
+                .collect(Collectors.joining(", "));
+
+        return buildResponseEntity(HttpStatus.BAD_REQUEST, message, request.getRequestURI());
     }
 }
