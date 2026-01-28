@@ -11,6 +11,8 @@ import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/doctors")
 @Tag(name = "Doctor Schedule REST API Endpoints", description = "Operations related to doctor schedules")
@@ -27,5 +29,12 @@ public class ScheduleController {
     @PostMapping("{doctorId}/schedules")
     public ScheduleResponse createSchedule(@PathVariable @Min(1) long doctorId, @Valid @RequestBody ScheduleRequest scheduleRequest){
         return scheduleService.createSchedule(doctorId, scheduleRequest);
+    }
+
+    @Operation(summary = "Retrieve schedules", description = "Retrieve the schedule for a doctor")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("{doctorId}/schedules")
+    public List<ScheduleResponse> getSchedulesByDoctorId(@PathVariable @Min(1) long doctorId){
+        return scheduleService.getScheduleByDoctorId(doctorId);
     }
 }

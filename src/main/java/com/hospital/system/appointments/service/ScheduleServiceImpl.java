@@ -80,7 +80,26 @@ public class ScheduleServiceImpl implements ScheduleService{
 
     @Override
     public List<ScheduleResponse> getScheduleByDoctorId(long doctorId) {
-        return null;
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new NotFoundException("Doctor not found with id: " + doctorId));
+
+        User user = findAuthenticatedUser.getAuthenticatedUser();
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+        boolean isDoctor = user.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_DOCTOR".equals(authority.getAuthority()));
+
+        if (!isAdmin && !isDoctor) {
+            throw new ForbiddenException("Cannot view schedule for this user");
+        }
+
+        if (!doctor.getActive()){
+            throw new BadRequestException("Cannot view schedule for inactive doctor");
+        }
+
+        return scheduleRepository.findByDoctorId(doctorId).stream()
+                .map(this::toScheduleResponse).toList();
+
     }
 
     @Override
@@ -117,6 +136,7 @@ public class ScheduleServiceImpl implements ScheduleService{
         return newStart.isBefore(existingEnd) && newEnd.isAfter(existingStart);
     }
 
+    //TODO: MOVE TO MAPPER
     private ScheduleResponse toScheduleResponse(Schedule schedule){
         return new ScheduleResponse(
                 schedule.getId(),
