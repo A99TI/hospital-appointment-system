@@ -16,6 +16,7 @@ import com.hospital.system.appointments.util.FindAuthenticatedUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.print.Doc;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
@@ -36,20 +37,7 @@ public class ScheduleServiceImpl implements ScheduleService{
     @Override
     @Transactional
     public ScheduleResponse createSchedule(long doctorId, ScheduleRequest request) {
-        Doctor doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new NotFoundException("Doctor not found with id: " + doctorId));
-
-        User user = findAuthenticatedUser.getAuthenticatedUser();
-        boolean isAdmin = user.getAuthorities().stream()
-                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
-
-        if (!isAdmin && !Objects.equals(user.getId(), doctor.getUser().getId())) {
-            throw new ForbiddenException("Cannot make schedule for this user");
-        }
-
-        if (!doctor.getActive()){
-            throw new BadRequestException("Cannot create schedule for inactive doctor");
-        }
+        Doctor doctor = authenticateUserDoctor(doctorId);
 
         validTimeRange(request.getStartTime(), request.getEndTime());
 
@@ -80,22 +68,8 @@ public class ScheduleServiceImpl implements ScheduleService{
 
     @Override
     public List<ScheduleResponse> getScheduleByDoctorId(long doctorId) {
-        Doctor doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new NotFoundException("Doctor not found with id: " + doctorId));
+        Doctor doctor = authenticateUserDoctor(doctorId);
 
-        User user = findAuthenticatedUser.getAuthenticatedUser();
-        boolean isAdmin = user.getAuthorities().stream()
-                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
-        boolean isDoctor = user.getAuthorities().stream()
-                .anyMatch(authority -> "ROLE_DOCTOR".equals(authority.getAuthority()));
-
-        if (!isAdmin && !isDoctor) {
-            throw new ForbiddenException("Cannot view schedule for this user");
-        }
-
-        if (!doctor.getActive()){
-            throw new BadRequestException("Cannot view schedule for inactive doctor");
-        }
 
         return scheduleRepository.findByDoctorId(doctorId).stream()
                 .map(this::toScheduleResponse).toList();
@@ -147,4 +121,27 @@ public class ScheduleServiceImpl implements ScheduleService{
                 schedule.getMaxPatients()
         );
     }
+
+    private Doctor authenticateUserDoctor(Long doctorId){
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new NotFoundException("Doctor not found with id: " + doctorId));
+
+        User user = findAuthenticatedUser.getAuthenticatedUser();
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+
+        if (!isAdmin && !Objects.equals(user.getId(), doctor.getUser().getId())) {
+            throw new ForbiddenException("Cannot make schedule for this user");
+        }
+
+        if (!doctor.getActive()){
+            throw new BadRequestException("Cannot create schedule for inactive doctor");
+
+        }
+
+        return doctor;
+
+    }
+
+
 }
