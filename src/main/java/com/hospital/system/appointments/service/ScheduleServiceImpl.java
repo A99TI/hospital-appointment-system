@@ -60,19 +60,16 @@ public class ScheduleServiceImpl implements ScheduleService{
         return responseMapper.toScheduleResponse(savedSchedule);
     }
 
-    //Own Doctor + Admin
     @Override
     public ScheduleResponse updateSchedule(long doctorId, Long scheduleId, ScheduleRequest request) {
         return null;
     }
 
-    //Own Doctor + Admin
     @Override
     public void deleteSchedule(long doctorId, Long scheduleId) {
 
     }
 
-    //All Authenticated Users
     @Override
     public List<ScheduleResponse> getScheduleByDoctorId(long doctorId) {
         Doctor doctor = authenticateUserDoctor(doctorId);
@@ -82,17 +79,36 @@ public class ScheduleServiceImpl implements ScheduleService{
 
     }
 
-    //own Doctor
     @Override
     public List<ScheduleResponse> getMySchedules() {
         return List.of();
     }
 
+    private Doctor validateAndGetDoctor(Long doctorId) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new NotFoundException("Doctor not found with id: " + doctorId));
 
+        User authenticatedUser = findAuthenticatedUser.getAuthenticatedUser();
 
+        if (!isAdmin(authenticatedUser) && !isOwnDoctor(authenticatedUser, doctor)) {
+            throw new ForbiddenException("Cannot access schedule for this doctor");
+        }
 
+        if (!doctor.getActive()) {
+            throw new BadRequestException("Cannot create schedule for inactive doctor");
+        }
 
+        return doctor;
+    }
 
+    private boolean isAdmin(User user) {
+        return user.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+    }
+
+    private boolean isOwnDoctor(User user, Doctor doctor) {
+        return Objects.equals(user.getId(), doctor.getUser().getId());
+    }
 
 
     private  void validTimeRange(LocalTime startTime, LocalTime endTime){
