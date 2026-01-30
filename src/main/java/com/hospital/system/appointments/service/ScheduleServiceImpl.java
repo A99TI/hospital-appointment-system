@@ -13,6 +13,7 @@ import com.hospital.system.appointments.repository.ScheduleRepository;
 import com.hospital.system.appointments.request.ScheduleRequest;
 import com.hospital.system.appointments.response.ScheduleResponse;
 import com.hospital.system.appointments.util.FindAuthenticatedUser;
+import com.hospital.system.appointments.util.ResponseMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,13 +28,16 @@ public class ScheduleServiceImpl implements ScheduleService{
     private final ScheduleRepository scheduleRepository;
     private final DoctorRepository doctorRepository;
     private final FindAuthenticatedUser findAuthenticatedUser;
+    private final ResponseMapper responseMapper;
 
-    public ScheduleServiceImpl(ScheduleRepository scheduleRepository, DoctorRepository doctorRepository, FindAuthenticatedUser findAuthenticatedUser) {
+    public ScheduleServiceImpl(ScheduleRepository scheduleRepository, DoctorRepository doctorRepository, FindAuthenticatedUser findAuthenticatedUser, ResponseMapper responseMapper) {
         this.scheduleRepository = scheduleRepository;
         this.doctorRepository = doctorRepository;
         this.findAuthenticatedUser = findAuthenticatedUser;
+        this.responseMapper = responseMapper;
     }
 
+    //Own Doctor + Admin
     @Override
     @Transactional
     public ScheduleResponse createSchedule(long doctorId, ScheduleRequest request) {
@@ -53,33 +57,43 @@ public class ScheduleServiceImpl implements ScheduleService{
 
         Schedule savedSchedule = scheduleRepository.save(schedule);
 
-        return toScheduleResponse(savedSchedule);
+        return responseMapper.toScheduleResponse(savedSchedule);
     }
 
+    //Own Doctor + Admin
     @Override
     public ScheduleResponse updateSchedule(long doctorId, Long scheduleId, ScheduleRequest request) {
         return null;
     }
 
+    //Own Doctor + Admin
     @Override
     public void deleteSchedule(long doctorId, Long scheduleId) {
 
     }
 
+    //All Authenticated Users
     @Override
     public List<ScheduleResponse> getScheduleByDoctorId(long doctorId) {
         Doctor doctor = authenticateUserDoctor(doctorId);
 
-
         return scheduleRepository.findByDoctorId(doctorId).stream()
-                .map(this::toScheduleResponse).toList();
+                .map(responseMapper::toScheduleResponse).toList();
 
     }
 
+    //own Doctor
     @Override
     public List<ScheduleResponse> getMySchedules() {
         return List.of();
     }
+
+
+
+
+
+
+
 
     private  void validTimeRange(LocalTime startTime, LocalTime endTime){
         if (startTime.isAfter(endTime) || startTime.equals(endTime)){
@@ -108,18 +122,6 @@ public class ScheduleServiceImpl implements ScheduleService{
 
     private boolean hasOverLaps(LocalTime newStart, LocalTime newEnd, LocalTime existingStart, LocalTime existingEnd ){
         return newStart.isBefore(existingEnd) && newEnd.isAfter(existingStart);
-    }
-
-    //TODO: MOVE TO MAPPER
-    private ScheduleResponse toScheduleResponse(Schedule schedule){
-        return new ScheduleResponse(
-                schedule.getId(),
-                schedule.getDoctor().getId(),
-                schedule.getDayOfWeek(),
-                schedule.getStartTime(),
-                schedule.getEndTime(),
-                schedule.getMaxPatients()
-        );
     }
 
     private Doctor authenticateUserDoctor(Long doctorId){

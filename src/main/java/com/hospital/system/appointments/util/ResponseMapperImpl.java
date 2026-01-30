@@ -2,8 +2,10 @@ package com.hospital.system.appointments.util;
 
 import com.hospital.system.appointments.entity.Authority;
 import com.hospital.system.appointments.entity.Doctor;
+import com.hospital.system.appointments.entity.Schedule;
 import com.hospital.system.appointments.entity.User;
 import com.hospital.system.appointments.response.DoctorResponse;
+import com.hospital.system.appointments.response.ScheduleResponse;
 import com.hospital.system.appointments.response.UserResponse;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +20,7 @@ public class ResponseMapperImpl implements ResponseMapper {
         );
     }
 
+    @Override
     public DoctorResponse toDoctorResponse(Doctor doctor) {
         User user = doctor.getUser();
         DoctorResponse response = new DoctorResponse();
@@ -33,5 +36,18 @@ public class ResponseMapperImpl implements ResponseMapper {
                 .toList());
         return response;
     }
+
+    @Override
+    public ScheduleResponse toScheduleResponse(Schedule schedule){
+        return new ScheduleResponse(
+                schedule.getId(),
+                schedule.getDoctor().getId(),
+                schedule.getDayOfWeek(),
+                schedule.getStartTime(),
+                schedule.getEndTime(),
+                schedule.getMaxPatients()
+        );
+    }
+
 
 }
