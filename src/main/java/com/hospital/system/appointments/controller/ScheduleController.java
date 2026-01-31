@@ -45,4 +45,11 @@ public class ScheduleController {
     public List<ScheduleResponse> getMySchedule(){
         return scheduleService.getMySchedules();
     }
+
+    @Operation(summary = "Delete a schedule", description = "Delete a schedule for a doctor")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("{doctorId}/schedules/{scheduleId}")
+    public void deleteSchedule(@PathVariable @Min(1) long doctorId, @PathVariable @Min(1) Long scheduleId) {
+        scheduleService.deleteSchedule(doctorId, scheduleId);
+    }
 }

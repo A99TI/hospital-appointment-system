@@ -17,7 +17,6 @@ import com.hospital.system.appointments.util.ResponseMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.print.Doc;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
@@ -66,8 +65,19 @@ public class ScheduleServiceImpl implements ScheduleService{
     }
 
     @Override
+    @Transactional
     public void deleteSchedule(long doctorId, Long scheduleId) {
+        Doctor doctor = validateAndGetDoctor(doctorId);
+        User authenticatedUser = findAuthenticatedUser.getAuthenticatedUser();
 
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new NotFoundException("Schedule not found with id: " + scheduleId));
+
+        if (!isAdmin(authenticatedUser) && !Objects.equals(schedule.getDoctor().getId(), doctor.getId())) {
+            throw new NotFoundException("Schedule not found with id: " + scheduleId);
+        }
+
+        scheduleRepository.delete(schedule);
     }
 
     @Override
