@@ -60,8 +60,29 @@ public class ScheduleServiceImpl implements ScheduleService{
     }
 
     @Override
+    @Transactional
     public ScheduleResponse updateSchedule(long doctorId, Long scheduleId, ScheduleRequest request) {
-        return null;
+        Doctor doctor = validateAndGetDoctor(doctorId);
+        User authenticatedUser = findAuthenticatedUser.getAuthenticatedUser();
+
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new NotFoundException("Schedule not found with id: " + scheduleId));
+
+        if (!isAdmin(authenticatedUser) && !Objects.equals(schedule.getDoctor().getId(), doctor.getId())) {
+            throw new NotFoundException("Schedule not found with id: " + scheduleId);
+        }
+
+        validTimeRange(request.getStartTime(), request.getEndTime());
+        Doctor scheduleOwner = schedule.getDoctor();
+        checkForOverLaps(scheduleOwner, request.getDayOfWeek(), request.getStartTime(), request.getEndTime(), scheduleId);
+
+        schedule.setDayOfWeek(request.getDayOfWeek());
+        schedule.setStartTime(request.getStartTime());
+        schedule.setEndTime(request.getEndTime());
+        schedule.setMaxPatients(request.getMaxPatients());
+
+        Schedule updatedSchedule = scheduleRepository.save(schedule);
+        return responseMapper.toScheduleResponse(updatedSchedule);
     }
 
     @Override

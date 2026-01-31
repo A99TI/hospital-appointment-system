@@ -38,6 +38,12 @@ public class ScheduleController {
         return scheduleService.getScheduleByDoctorId(doctorId);
     }
 
+    @Operation(summary = "Update a schedule", description = "Update a schedule for a doctor")
+    @ResponseStatus(HttpStatus.OK)
+    @PutMapping("{doctorId}/schedules/{scheduleId}")
+    public ScheduleResponse updateSchedule(@PathVariable @Min(1) long doctorId, @PathVariable @Min(1) Long scheduleId, @Valid @RequestBody ScheduleRequest scheduleRequest) {
+        return scheduleService.updateSchedule(doctorId, scheduleId, scheduleRequest);
+    }
 
     @Operation(summary = "Retrieve schedule for yourself", description = "Retrieve the schedule for logged in doctor")
     @ResponseStatus(HttpStatus.OK)
