@@ -81,7 +81,19 @@ public class ScheduleServiceImpl implements ScheduleService{
 
     @Override
     public List<ScheduleResponse> getMySchedules() {
-        return List.of();
+        User authenticatedUser = findAuthenticatedUser.getAuthenticatedUser();
+
+        boolean isDoctor = authenticatedUser.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_DOCTOR".equals(a.getAuthority()));
+        if (!isDoctor) {
+            throw new ForbiddenException("User is not a Doctor");
+        }
+
+        Doctor doctor = doctorRepository.findByUserId(authenticatedUser.getId())
+                .orElseThrow(() -> new NotFoundException("Doctor not found"));
+
+        return scheduleRepository.findByDoctorId(doctor.getId()).stream()
+                .map(responseMapper::toScheduleResponse).toList();
     }
 
     private Doctor validateAndGetDoctor(Long doctorId) {

@@ -37,4 +37,12 @@ public class ScheduleController {
     public List<ScheduleResponse> getSchedulesByDoctorId(@PathVariable @Min(1) long doctorId){
         return scheduleService.getScheduleByDoctorId(doctorId);
     }
+
+
+    @Operation(summary = "Retrieve schedule for yourself", description = "Retrieve the schedule for logged in doctor")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("me/schedules")
+    public List<ScheduleResponse> getMySchedule(){
+        return scheduleService.getMySchedules();
+    }
 }
