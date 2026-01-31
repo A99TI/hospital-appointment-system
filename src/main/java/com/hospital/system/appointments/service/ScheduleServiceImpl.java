@@ -41,7 +41,7 @@ public class ScheduleServiceImpl implements ScheduleService{
     @Override
     @Transactional
     public ScheduleResponse createSchedule(long doctorId, ScheduleRequest request) {
-        Doctor doctor = authenticateUserDoctor(doctorId);
+        Doctor doctor = validateAndGetDoctor(doctorId);
 
         validTimeRange(request.getStartTime(), request.getEndTime());
 
@@ -72,7 +72,7 @@ public class ScheduleServiceImpl implements ScheduleService{
 
     @Override
     public List<ScheduleResponse> getScheduleByDoctorId(long doctorId) {
-        Doctor doctor = authenticateUserDoctor(doctorId);
+        Doctor doctor = validateAndGetDoctor(doctorId);
 
         return scheduleRepository.findByDoctorId(doctorId).stream()
                 .map(responseMapper::toScheduleResponse).toList();
@@ -103,11 +103,11 @@ public class ScheduleServiceImpl implements ScheduleService{
         User authenticatedUser = findAuthenticatedUser.getAuthenticatedUser();
 
         if (!isAdmin(authenticatedUser) && !isOwnDoctor(authenticatedUser, doctor)) {
-            throw new ForbiddenException("Cannot access schedule for this doctor");
+            throw new ForbiddenException("You do not have permission to manage this doctor's schedules");
         }
 
         if (!doctor.getActive()) {
-            throw new BadRequestException("Cannot create schedule for inactive doctor");
+            throw new BadRequestException("Cannot perform this action for an inactive doctor.");
         }
 
         return doctor;
@@ -121,7 +121,6 @@ public class ScheduleServiceImpl implements ScheduleService{
     private boolean isOwnDoctor(User user, Doctor doctor) {
         return Objects.equals(user.getId(), doctor.getUser().getId());
     }
-
 
     private  void validTimeRange(LocalTime startTime, LocalTime endTime){
         if (startTime.isAfter(endTime) || startTime.equals(endTime)){
@@ -152,26 +151,6 @@ public class ScheduleServiceImpl implements ScheduleService{
         return newStart.isBefore(existingEnd) && newEnd.isAfter(existingStart);
     }
 
-    private Doctor authenticateUserDoctor(Long doctorId){
-        Doctor doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new NotFoundException("Doctor not found with id: " + doctorId));
-
-        User user = findAuthenticatedUser.getAuthenticatedUser();
-        boolean isAdmin = user.getAuthorities().stream()
-                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
-
-        if (!isAdmin && !Objects.equals(user.getId(), doctor.getUser().getId())) {
-            throw new ForbiddenException("Cannot make schedule for this user");
-        }
-
-        if (!doctor.getActive()){
-            throw new BadRequestException("Cannot create schedule for inactive doctor");
-
-        }
-
-        return doctor;
-
-    }
 
 
 }
