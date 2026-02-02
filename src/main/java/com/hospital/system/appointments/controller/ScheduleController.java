@@ -3,7 +3,7 @@ package com.hospital.system.appointments.controller;
 
 import com.hospital.system.appointments.request.ScheduleRequest;
 import com.hospital.system.appointments.response.ScheduleResponse;
-import com.hospital.system.appointments.service.ScheduleService;
+import com.hospital.system.appointments.service.schedule.ScheduleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
