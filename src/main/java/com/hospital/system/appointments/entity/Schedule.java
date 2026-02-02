@@ -2,9 +2,15 @@ package com.hospital.system.appointments.entity;
 
 import com.hospital.system.appointments.enums.DayOfWeek;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalTime;
 
+@Getter
+@Setter
+@NoArgsConstructor
 @Table(name = "schedules")
 @Entity
 public class Schedule {
@@ -31,63 +37,11 @@ public class Schedule {
     @Column(nullable = false)
     private Integer maxPatients;
 
-
-    public Schedule() {
-    }
-
     public Schedule(Doctor doctor, DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime, Integer maxPatients) {
         this.doctor = doctor;
         this.dayOfWeek = dayOfWeek;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.maxPatients = maxPatients;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Doctor getDoctor() {
-        return doctor;
-    }
-
-    public void setDoctor(Doctor doctor) {
-        this.doctor = doctor;
-    }
-
-    public DayOfWeek getDayOfWeek() {
-        return dayOfWeek;
-    }
-
-    public void setDayOfWeek(DayOfWeek dayOfWeek) {
-        this.dayOfWeek = dayOfWeek;
-    }
-
-    public LocalTime getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(LocalTime startTime) {
-        this.startTime = startTime;
-    }
-
-    public LocalTime getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(LocalTime endTime) {
-        this.endTime = endTime;
-    }
-
-    public Integer getMaxPatients() {
-        return maxPatients;
-    }
-
-    public void setMaxPatients(Integer maxPatients) {
         this.maxPatients = maxPatients;
     }
 }

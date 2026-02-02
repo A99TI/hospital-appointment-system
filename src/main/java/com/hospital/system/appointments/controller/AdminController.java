@@ -27,17 +27,10 @@ public class AdminController {
         return adminService.getAllUsers();
     }
 
-    @Operation(summary = "Promote user to admin", description = "Promote user to admin role")
-    @ResponseStatus(HttpStatus.OK)
-    @PutMapping("/users/promote-to-admin/{userId}")
-    public UserResponse promoteToAdmin(@PathVariable @Min(1) long userId){
-        return adminService.promoteToAdmin(userId);
-    }
-
     @Operation(summary = "Delete a user", description = "Delete a non-admin user from the system")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/users/{userId}")
-    public void getAllUsers(@PathVariable @Min(1) long userId){
+    public void deleteUser(@PathVariable @Min(1) long userId){
         adminService.deleteNonAdminUser(userId);
     }
 

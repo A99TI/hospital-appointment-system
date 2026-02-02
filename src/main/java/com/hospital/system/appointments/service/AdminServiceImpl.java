@@ -1,75 +1,42 @@
 package com.hospital.system.appointments.service;
 
-import com.hospital.system.appointments.entity.Authority;
 import com.hospital.system.appointments.entity.User;
-import com.hospital.system.appointments.exception.ConflictException;
-import com.hospital.system.appointments.exception.NotFoundException;
 import com.hospital.system.appointments.repository.UserRepository;
 import com.hospital.system.appointments.response.UserResponse;
+import com.hospital.system.appointments.util.FindNonAdminUser;
+import com.hospital.system.appointments.util.ResponseMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 @Service
 public class AdminServiceImpl implements AdminService{
 
     private final UserRepository userRepository;
+    private final FindNonAdminUser findNonAdminUser;
+    private final ResponseMapper responseMapper;
 
-    public AdminServiceImpl(UserRepository userRepository) {
+    public AdminServiceImpl(UserRepository userRepository, FindNonAdminUser findNonAdminUser, ResponseMapper responseMapper) {
         this.userRepository = userRepository;
+        this.findNonAdminUser = findNonAdminUser;
+        this.responseMapper = responseMapper;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<UserResponse> getAllUsers() {
         return StreamSupport.stream(userRepository.findAll().spliterator(), false)
-                .map(this::convertToUserResponse).toList();
-    }
-
-    @Override
-    @Transactional
-    public UserResponse promoteToAdmin(long userId) {
-        User user = getNonAdminUser(userId);
-
-        List<Authority> authorities = new ArrayList<>();
-        authorities.add(new Authority("ROLE_EMPLOYEE"));
-        authorities.add(new Authority("ROLE_ADMIN"));
-        user.setAuthorities(authorities);
-
-        User savedUser = userRepository.save(user);
-
-        return convertToUserResponse(savedUser);
+                .map(responseMapper::toUserResponse).toList();
     }
 
     @Override
     @Transactional
     public void deleteNonAdminUser(long userId) {
-        User user = getNonAdminUser(userId);
+        User user = findNonAdminUser.getNonAdminUser(userId);
 
         userRepository.delete(user);
 
-    }
-
-    private UserResponse convertToUserResponse(User user){
-        return new UserResponse(
-                user.getId(),
-                user.getEmail(),
-                user.getAuthorities().stream().map(authority -> (Authority) authority).toList()
-        );
-    }
-
-    private User getNonAdminUser(long userId){
-        Optional<User> user = userRepository.findById(userId);
-
-        if (user.isEmpty()) throw new NotFoundException("User does not exist");
-        if (user.get().getAuthorities().stream().anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()))) {
-            throw new ConflictException("User is an admin");
-        }
-
-        return user.get();
     }
 }

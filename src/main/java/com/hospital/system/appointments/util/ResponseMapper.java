@@ -1,0 +1,14 @@
+package com.hospital.system.appointments.util;
+
+import com.hospital.system.appointments.entity.Doctor;
+import com.hospital.system.appointments.entity.Schedule;
+import com.hospital.system.appointments.entity.User;
+import com.hospital.system.appointments.response.DoctorResponse;
+import com.hospital.system.appointments.response.ScheduleResponse;
+import com.hospital.system.appointments.response.UserResponse;
+
+public interface ResponseMapper {
+    UserResponse toUserResponse(User user);
+    DoctorResponse toDoctorResponse(Doctor doctor);
+    ScheduleResponse toScheduleResponse(Schedule schedule);
+}
