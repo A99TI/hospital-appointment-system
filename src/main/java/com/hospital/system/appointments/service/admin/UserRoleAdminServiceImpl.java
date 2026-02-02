@@ -1,4 +1,4 @@
-package com.hospital.system.appointments.service;
+package com.hospital.system.appointments.service.admin;
 
 import com.hospital.system.appointments.entity.Authority;
 import com.hospital.system.appointments.entity.Doctor;

@@ -1,4 +1,4 @@
-package com.hospital.system.appointments.service;
+package com.hospital.system.appointments.service.user;
 
 import com.hospital.system.appointments.request.PasswordUpdateRequest;
 import com.hospital.system.appointments.response.UserResponse;

@@ -1,4 +1,4 @@
-package com.hospital.system.appointments.service;
+package com.hospital.system.appointments.service.authentication;
 
 import com.hospital.system.appointments.entity.Authority;
 import com.hospital.system.appointments.entity.User;
@@ -7,6 +7,7 @@ import com.hospital.system.appointments.repository.UserRepository;
 import com.hospital.system.appointments.request.AuthenticationRequest;
 import com.hospital.system.appointments.request.RegisterRequest;
 import com.hospital.system.appointments.response.AuthenticationResponse;
+import com.hospital.system.appointments.service.jwt.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;

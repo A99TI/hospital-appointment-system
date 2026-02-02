@@ -1,4 +1,4 @@
-package com.hospital.system.appointments.service;
+package com.hospital.system.appointments.service.jwt;
 
 import org.springframework.security.core.userdetails.UserDetails;
 

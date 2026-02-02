@@ -3,7 +3,7 @@ package com.hospital.system.appointments.controller;
 import com.hospital.system.appointments.request.DoctorRequest;
 import com.hospital.system.appointments.response.DoctorResponse;
 import com.hospital.system.appointments.response.UserResponse;
-import com.hospital.system.appointments.service.UserRoleAdminService;
+import com.hospital.system.appointments.service.admin.UserRoleAdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

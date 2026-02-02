@@ -1,6 +1,6 @@
 package com.hospital.system.appointments.config;
 
-import com.hospital.system.appointments.service.JwtService;
+import com.hospital.system.appointments.service.jwt.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
