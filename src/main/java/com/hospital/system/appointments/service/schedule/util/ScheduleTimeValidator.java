@@ -6,19 +6,17 @@ import com.hospital.system.appointments.enums.DayOfWeek;
 import com.hospital.system.appointments.exception.BadRequestException;
 import com.hospital.system.appointments.exception.ConflictException;
 import com.hospital.system.appointments.repository.ScheduleRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalTime;
 import java.util.List;
 
 @Component
+@AllArgsConstructor
 public class ScheduleTimeValidator {
 
     private final ScheduleRepository scheduleRepository;
-
-    public ScheduleTimeValidator(ScheduleRepository scheduleRepository) {
-        this.scheduleRepository = scheduleRepository;
-    }
 
     public void validTimeRange(LocalTime startTime, LocalTime endTime){
         if (startTime.isAfter(endTime) || startTime.equals(endTime)){

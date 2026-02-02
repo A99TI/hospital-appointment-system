@@ -14,12 +14,14 @@ import com.hospital.system.appointments.service.schedule.util.ScheduleDoctorVali
 import com.hospital.system.appointments.service.schedule.util.ScheduleTimeValidator;
 import com.hospital.system.appointments.util.FindAuthenticatedUser;
 import com.hospital.system.appointments.util.ResponseMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ScheduleServiceImpl implements ScheduleService{
 
     private final ScheduleRepository scheduleRepository;
@@ -28,15 +30,6 @@ public class ScheduleServiceImpl implements ScheduleService{
     private final ResponseMapper responseMapper;
     private final ScheduleDoctorValidator scheduleDoctorValidator;
     private final ScheduleTimeValidator scheduleTimeValidator;
-
-    public ScheduleServiceImpl(ScheduleRepository scheduleRepository, DoctorRepository doctorRepository, FindAuthenticatedUser findAuthenticatedUser, ResponseMapper responseMapper, ScheduleDoctorValidator scheduleDoctorValidator, ScheduleTimeValidator scheduleTimeValidator) {
-        this.scheduleRepository = scheduleRepository;
-        this.doctorRepository = doctorRepository;
-        this.findAuthenticatedUser = findAuthenticatedUser;
-        this.responseMapper = responseMapper;
-        this.scheduleDoctorValidator = scheduleDoctorValidator;
-        this.scheduleTimeValidator = scheduleTimeValidator;
-    }
 
     @Override
     @Transactional

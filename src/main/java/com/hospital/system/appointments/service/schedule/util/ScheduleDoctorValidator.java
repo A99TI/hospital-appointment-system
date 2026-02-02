@@ -10,23 +10,19 @@ import com.hospital.system.appointments.exception.NotFoundException;
 import com.hospital.system.appointments.repository.DoctorRepository;
 import com.hospital.system.appointments.repository.ScheduleRepository;
 import com.hospital.system.appointments.util.FindAuthenticatedUser;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
 @Component
+@AllArgsConstructor
 public class ScheduleDoctorValidator {
 
     private final ScheduleRepository scheduleRepository;
     private final DoctorRepository doctorRepository;
     private final FindAuthenticatedUser findAuthenticatedUser;;
 
-    public ScheduleDoctorValidator(ScheduleRepository scheduleRepository, DoctorRepository doctorRepository, FindAuthenticatedUser findAuthenticatedUser) {
-        this.scheduleRepository = scheduleRepository;
-        this.doctorRepository = doctorRepository;
-        this.findAuthenticatedUser = findAuthenticatedUser;
-
-    }
 
     public Schedule findAndValidateCanManageSchedule(Doctor doctor, long scheduleId) {
         User authenticatedUser = findAuthenticatedUser.getAuthenticatedUser();
