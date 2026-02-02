@@ -2,6 +2,7 @@ package com.hospital.system.appointments.service;
 
 import com.hospital.system.appointments.entity.Authority;
 import com.hospital.system.appointments.entity.User;
+import com.hospital.system.appointments.enums.Role;
 import com.hospital.system.appointments.exception.BadRequestException;
 import com.hospital.system.appointments.exception.ForbiddenException;
 import com.hospital.system.appointments.repository.UserRepository;
@@ -51,10 +52,10 @@ public class UserServiceImpl implements UserService {
 
     private boolean isLastAdmin(User user){
         boolean isAdmin = user.getAuthorities().stream()
-                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+                .anyMatch(authority -> Role.ADMIN.getAuthority().equals(authority.getAuthority()));
 
         if (isAdmin){
-            long adminCount = userRepository.countAdminUsers();
+            long adminCount = userRepository.countUsersWithAuthority(Role.ADMIN.getAuthority());
             return adminCount <= 1;
         }
 

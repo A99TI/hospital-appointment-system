@@ -4,6 +4,7 @@ import com.hospital.system.appointments.entity.Doctor;
 import com.hospital.system.appointments.entity.Schedule;
 import com.hospital.system.appointments.entity.User;
 import com.hospital.system.appointments.enums.DayOfWeek;
+import com.hospital.system.appointments.enums.Role;
 import com.hospital.system.appointments.exception.BadRequestException;
 import com.hospital.system.appointments.exception.ConflictException;
 import com.hospital.system.appointments.exception.ForbiddenException;
@@ -100,7 +101,7 @@ public class ScheduleServiceImpl implements ScheduleService{
         User authenticatedUser = findAuthenticatedUser.getAuthenticatedUser();
 
         boolean isDoctor = authenticatedUser.getAuthorities().stream()
-                .anyMatch(a -> "ROLE_DOCTOR".equals(a.getAuthority()));
+                .anyMatch(a -> Role.DOCTOR.getAuthority().equals(a.getAuthority()));
         if (!isDoctor) {
             throw new ForbiddenException("User is not a Doctor");
         }
@@ -144,7 +145,7 @@ public class ScheduleServiceImpl implements ScheduleService{
 
     private boolean isAdmin(User user) {
         return user.getAuthorities().stream()
-                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+                .anyMatch(authority -> Role.ADMIN.getAuthority().equals(authority.getAuthority()));
     }
 
     private boolean isOwnDoctor(User user, Doctor doctor) {

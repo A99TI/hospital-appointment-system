@@ -2,6 +2,7 @@ package com.hospital.system.appointments.service;
 
 import com.hospital.system.appointments.entity.Authority;
 import com.hospital.system.appointments.entity.User;
+import com.hospital.system.appointments.enums.Role;
 import com.hospital.system.appointments.repository.UserRepository;
 import com.hospital.system.appointments.request.AuthenticationRequest;
 import com.hospital.system.appointments.request.RegisterRequest;
@@ -77,8 +78,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         boolean isFirstUser = userRepository.count() == 0;
         List<Authority> authorities = new ArrayList<>();
 
-        if (isFirstUser) authorities.add(new Authority("ROLE_ADMIN"));
-        authorities.add(new Authority("ROLE_USER"));
+        if (isFirstUser) authorities.add(new Authority(Role.ADMIN.getAuthority()));
+        authorities.add(new Authority(Role.USER.getAuthority()));
 
         return authorities;
     }

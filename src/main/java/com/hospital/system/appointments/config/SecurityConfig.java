@@ -19,15 +19,13 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.hospital.system.appointments.enums.Role;
 import com.hospital.system.appointments.repository.UserRepository;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-
-    private static final String ROLE_ADMIN = "ADMIN";
-    private static final String ROLE_DOCTOR = "DOCTOR";
 
     private final UserRepository userRepository;
 
@@ -70,12 +68,12 @@ public class SecurityConfig {
                 configurer
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**",
                                 "/swagger-resources/**", "/webjars/**", "/docs", "/api/auth/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole(ROLE_ADMIN)
-                        .requestMatchers(HttpMethod.GET, "/api/doctors/me/schedules").hasRole(ROLE_DOCTOR)
-                        .requestMatchers(HttpMethod.GET, "/api/doctors/*/schedules").hasAnyRole(ROLE_ADMIN, ROLE_DOCTOR)
-                        .requestMatchers(HttpMethod.POST, "/api/doctors/*/schedules").hasAnyRole(ROLE_ADMIN, ROLE_DOCTOR)
-                        .requestMatchers(HttpMethod.PUT, "/api/doctors/*/schedules/*").hasAnyRole(ROLE_ADMIN, ROLE_DOCTOR)
-                        .requestMatchers(HttpMethod.DELETE, "/api/doctors/*/schedules/*").hasAnyRole(ROLE_ADMIN, ROLE_DOCTOR)
+                        .requestMatchers("/api/admin/**").hasRole(Role.ADMIN.name())
+                        .requestMatchers(HttpMethod.GET, "/api/doctors/me/schedules").hasRole(Role.DOCTOR.name())
+                        .requestMatchers(HttpMethod.GET, "/api/doctors/*/schedules").hasAnyRole(Role.ADMIN.name(), Role.DOCTOR.name())
+                        .requestMatchers(HttpMethod.POST, "/api/doctors/*/schedules").hasAnyRole(Role.ADMIN.name(), Role.DOCTOR.name())
+                        .requestMatchers(HttpMethod.PUT, "/api/doctors/*/schedules/*").hasAnyRole(Role.ADMIN.name(), Role.DOCTOR.name())
+                        .requestMatchers(HttpMethod.DELETE, "/api/doctors/*/schedules/*").hasAnyRole(Role.ADMIN.name(), Role.DOCTOR.name())
                         .anyRequest().authenticated());
 
         http.csrf(AbstractHttpConfigurer::disable);

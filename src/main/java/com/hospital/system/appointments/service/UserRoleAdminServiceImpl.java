@@ -2,6 +2,7 @@ package com.hospital.system.appointments.service;
 
 import com.hospital.system.appointments.entity.Authority;
 import com.hospital.system.appointments.entity.Doctor;
+import com.hospital.system.appointments.enums.Role;
 import com.hospital.system.appointments.entity.User;
 import com.hospital.system.appointments.repository.DoctorRepository;
 import com.hospital.system.appointments.repository.UserRepository;
@@ -37,8 +38,8 @@ public class UserRoleAdminServiceImpl implements UserRoleAdminService {
         User user = findNonAdminUser.getNonAdminUser(userId);
 
         List<Authority> authorities = new ArrayList<>();
-        authorities.add(new Authority("ROLE_USER"));
-        authorities.add(new Authority("ROLE_ADMIN"));
+        authorities.add(new Authority(Role.USER.getAuthority()));
+        authorities.add(new Authority(Role.ADMIN.getAuthority()));
         user.setAuthorities(authorities);
 
         User savedUser = userRepository.save(user);
@@ -52,8 +53,8 @@ public class UserRoleAdminServiceImpl implements UserRoleAdminService {
         User user = findNonAdminUser.getNonAdminUser(userId);
 
         List<Authority> authorities = new ArrayList<>();
-        authorities.add(new Authority("ROLE_USER"));
-        authorities.add(new Authority("ROLE_DOCTOR"));
+        authorities.add(new Authority(Role.USER.getAuthority()));
+        authorities.add(new Authority(Role.DOCTOR.getAuthority()));
         user.setAuthorities(authorities);
         User savedUser = userRepository.save(user);
 
