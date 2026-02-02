@@ -35,8 +35,7 @@ public class ScheduleServiceImpl implements ScheduleService{
         this.findAuthenticatedUser = findAuthenticatedUser;
         this.responseMapper = responseMapper;
     }
-
-    //Own Doctor + Admin
+    
     @Override
     @Transactional
     public ScheduleResponse createSchedule(long doctorId, ScheduleRequest request) {
