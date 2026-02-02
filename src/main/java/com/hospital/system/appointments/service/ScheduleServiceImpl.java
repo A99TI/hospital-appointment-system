@@ -62,7 +62,7 @@ public class ScheduleServiceImpl implements ScheduleService{
     @Transactional
     public ScheduleResponse updateSchedule(long doctorId, Long scheduleId, ScheduleRequest request) {
         Doctor doctor = validateAndGetDoctor(doctorId);
-        Schedule schedule = validateCanManageSchedule(doctor, scheduleId)
+        Schedule schedule = findAndValidateCanManageSchedule(doctor, scheduleId);
 
         validTimeRange(request.getStartTime(), request.getEndTime());
         Doctor scheduleOwner = schedule.getDoctor();
@@ -81,7 +81,7 @@ public class ScheduleServiceImpl implements ScheduleService{
     @Transactional
     public void deleteSchedule(long doctorId, Long scheduleId) {
         Doctor doctor = validateAndGetDoctor(doctorId);
-        Schedule schedule = validateCanManageSchedule(doctor, scheduleId);
+        Schedule schedule = findAndValidateCanManageSchedule(doctor, scheduleId);
 
         scheduleRepository.delete(schedule);
     }
@@ -112,7 +112,7 @@ public class ScheduleServiceImpl implements ScheduleService{
                 .map(responseMapper::toScheduleResponse).toList();
     }
 
-    private Schedule validateCanManageSchedule(Doctor doctor, long scheduleId) {
+    private Schedule findAndValidateCanManageSchedule(Doctor doctor, long scheduleId) {
         User authenticatedUser = findAuthenticatedUser.getAuthenticatedUser();
 
         Schedule schedule = scheduleRepository.findById(scheduleId)
