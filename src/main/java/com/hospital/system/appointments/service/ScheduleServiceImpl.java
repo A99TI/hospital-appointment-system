@@ -62,14 +62,7 @@ public class ScheduleServiceImpl implements ScheduleService{
     @Transactional
     public ScheduleResponse updateSchedule(long doctorId, Long scheduleId, ScheduleRequest request) {
         Doctor doctor = validateAndGetDoctor(doctorId);
-        User authenticatedUser = findAuthenticatedUser.getAuthenticatedUser();
-
-        Schedule schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new NotFoundException("Schedule not found with id: " + scheduleId));
-
-        if (!isAdmin(authenticatedUser) && !Objects.equals(schedule.getDoctor().getId(), doctor.getId())) {
-            throw new NotFoundException("Schedule not found with id: " + scheduleId);
-        }
+        Schedule schedule = validateCanManageSchedule(doctor, scheduleId)
 
         validTimeRange(request.getStartTime(), request.getEndTime());
         Doctor scheduleOwner = schedule.getDoctor();
@@ -88,14 +81,7 @@ public class ScheduleServiceImpl implements ScheduleService{
     @Transactional
     public void deleteSchedule(long doctorId, Long scheduleId) {
         Doctor doctor = validateAndGetDoctor(doctorId);
-        User authenticatedUser = findAuthenticatedUser.getAuthenticatedUser();
-
-        Schedule schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new NotFoundException("Schedule not found with id: " + scheduleId));
-
-        if (!isAdmin(authenticatedUser) && !Objects.equals(schedule.getDoctor().getId(), doctor.getId())) {
-            throw new NotFoundException("Schedule not found with id: " + scheduleId);
-        }
+        Schedule schedule = validateCanManageSchedule(doctor, scheduleId);
 
         scheduleRepository.delete(schedule);
     }
@@ -124,6 +110,19 @@ public class ScheduleServiceImpl implements ScheduleService{
 
         return scheduleRepository.findByDoctorId(doctor.getId()).stream()
                 .map(responseMapper::toScheduleResponse).toList();
+    }
+
+    private Schedule validateCanManageSchedule(Doctor doctor, long scheduleId) {
+        User authenticatedUser = findAuthenticatedUser.getAuthenticatedUser();
+
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new NotFoundException("Schedule not found with id: " + scheduleId));
+
+        if (!isAdmin(authenticatedUser) && !Objects.equals(schedule.getDoctor().getId(), doctor.getId())) {
+            throw new NotFoundException("You do not have permission to manage this doctor's schedules");
+        }
+
+        return schedule;
     }
 
     private Doctor validateAndGetDoctor(Long doctorId) {
