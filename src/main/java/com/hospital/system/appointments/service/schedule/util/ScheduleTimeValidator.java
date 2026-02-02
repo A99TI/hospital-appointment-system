@@ -18,19 +18,19 @@ public class ScheduleTimeValidator {
 
     private final ScheduleRepository scheduleRepository;
 
-    public void validTimeRange(LocalTime startTime, LocalTime endTime){
+    public void validateTimeRange(LocalTime startTime, LocalTime endTime){
         if (startTime.isAfter(endTime) || startTime.equals(endTime)){
             throw new BadRequestException("Start Time must be before end time");
         }
     }
 
-    public void checkForOverLaps(Doctor doctor, DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime, Long excludeScheduleId){
+    public void checkForOverlaps(Doctor doctor, DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime, Long excludeScheduleId){
         List<Schedule> existingSchedules = excludeScheduleId == null
                 ? scheduleRepository.findByDoctorIdAndDayOfWeek(doctor.getId(), dayOfWeek)
                 : scheduleRepository.findByDoctorIdAndDayOfWeekAndIdNot(doctor.getId(), dayOfWeek, excludeScheduleId);
 
         for (Schedule existing: existingSchedules){
-            if (hasOverLaps(startTime, endTime, existing.getStartTime(), existing.getEndTime())){
+            if (hasOverlaps(startTime, endTime, existing.getStartTime(), existing.getEndTime())){
                 throw new ConflictException(
                         String.format(
                                 "Schedule overlaps with existing schedule: %s %s-%s",
@@ -43,7 +43,7 @@ public class ScheduleTimeValidator {
         }
     }
 
-    public boolean hasOverLaps(LocalTime newStart, LocalTime newEnd, LocalTime existingStart, LocalTime existingEnd ){
+    public boolean hasOverlaps(LocalTime newStart, LocalTime newEnd, LocalTime existingStart, LocalTime existingEnd ){
         return newStart.isBefore(existingEnd) && newEnd.isAfter(existingStart);
     }
 }

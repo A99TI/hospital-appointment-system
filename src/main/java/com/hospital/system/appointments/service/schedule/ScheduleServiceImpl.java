@@ -36,9 +36,9 @@ public class ScheduleServiceImpl implements ScheduleService{
     public ScheduleResponse createSchedule(long doctorId, ScheduleRequest request) {
         Doctor doctor = scheduleDoctorValidator.validateAndGetDoctor(doctorId);
 
-        scheduleTimeValidator.validTimeRange(request.getStartTime(), request.getEndTime());
+        scheduleTimeValidator.validateTimeRange(request.getStartTime(), request.getEndTime());
 
-        scheduleTimeValidator.checkForOverLaps(doctor, request.getDayOfWeek(), request.getStartTime(), request.getEndTime(), null);
+        scheduleTimeValidator.checkForOverlaps(doctor, request.getDayOfWeek(), request.getStartTime(), request.getEndTime(), null);
 
         Schedule schedule = new Schedule(
                 doctor,
@@ -59,9 +59,8 @@ public class ScheduleServiceImpl implements ScheduleService{
         Doctor doctor = scheduleDoctorValidator.validateAndGetDoctor(doctorId);
         Schedule schedule = scheduleDoctorValidator.findAndValidateCanManageSchedule(doctor, scheduleId);
 
-        scheduleTimeValidator.validTimeRange(request.getStartTime(), request.getEndTime());
-        Doctor scheduleOwner = schedule.getDoctor();
-        scheduleTimeValidator.checkForOverLaps(scheduleOwner, request.getDayOfWeek(), request.getStartTime(), request.getEndTime(), scheduleId);
+        scheduleTimeValidator.validateTimeRange(request.getStartTime(), request.getEndTime());
+        scheduleTimeValidator.checkForOverlaps(doctor, request.getDayOfWeek(), request.getStartTime(), request.getEndTime(), scheduleId);
 
         schedule.setDayOfWeek(request.getDayOfWeek());
         schedule.setStartTime(request.getStartTime());
@@ -106,11 +105,4 @@ public class ScheduleServiceImpl implements ScheduleService{
         return scheduleRepository.findByDoctorId(doctor.getId()).stream()
                 .map(responseMapper::toScheduleResponse).toList();
     }
-
-
-
-
-
-
-
 }

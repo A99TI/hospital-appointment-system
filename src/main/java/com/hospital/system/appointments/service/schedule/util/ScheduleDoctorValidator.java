@@ -21,7 +21,7 @@ public class ScheduleDoctorValidator {
 
     private final ScheduleRepository scheduleRepository;
     private final DoctorRepository doctorRepository;
-    private final FindAuthenticatedUser findAuthenticatedUser;;
+    private final FindAuthenticatedUser findAuthenticatedUser;
 
 
     public Schedule findAndValidateCanManageSchedule(Doctor doctor, long scheduleId) {
