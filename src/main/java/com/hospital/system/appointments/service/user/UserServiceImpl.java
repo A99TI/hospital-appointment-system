@@ -8,7 +8,7 @@ import com.hospital.system.appointments.exception.ForbiddenException;
 import com.hospital.system.appointments.repository.UserRepository;
 import com.hospital.system.appointments.request.PasswordUpdateRequest;
 import com.hospital.system.appointments.response.UserResponse;
-import com.hospital.system.appointments.util.FindAuthenticatedUser;
+import com.hospital.system.appointments.util.AuthUserResolver;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,19 +17,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final FindAuthenticatedUser findAuthenticatedUser;
+    private final AuthUserResolver authUserResolver;
     private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, FindAuthenticatedUser findAuthenticatedUser, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, AuthUserResolver authUserResolver, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.findAuthenticatedUser = findAuthenticatedUser;
+        this.authUserResolver = authUserResolver;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserResponse getUser(){
-        User user =  findAuthenticatedUser.getAuthenticatedUser();
+        User user =  authUserResolver.getAuthenticatedUser();
 
         return new UserResponse(
                 user.getId(),
@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser () {
-        User user =  findAuthenticatedUser.getAuthenticatedUser();
+        User user =  authUserResolver.getAuthenticatedUser();
 
         if (isLastAdmin(user)){
             throw new ForbiddenException("Admin cannot delete itself");
@@ -64,7 +64,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updatePassword(PasswordUpdateRequest passwordUpdateRequest) {
-        User user = findAuthenticatedUser.getAuthenticatedUser();
+        User user = authUserResolver.getAuthenticatedUser();
 
         if (!isOldPasswordCorrect(passwordUpdateRequest.getOldPassword(), user.getPassword())){
             throw new BadRequestException("Current password is incorrect");

@@ -12,7 +12,7 @@ import com.hospital.system.appointments.request.ScheduleRequest;
 import com.hospital.system.appointments.response.ScheduleResponse;
 import com.hospital.system.appointments.service.schedule.util.ScheduleDoctorValidator;
 import com.hospital.system.appointments.service.schedule.util.ScheduleTimeValidator;
-import com.hospital.system.appointments.util.FindAuthenticatedUser;
+import com.hospital.system.appointments.util.AuthUserResolver;
 import com.hospital.system.appointments.util.ResponseMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ public class ScheduleServiceImpl implements ScheduleService{
 
     private final ScheduleRepository scheduleRepository;
     private final DoctorRepository doctorRepository;
-    private final FindAuthenticatedUser findAuthenticatedUser;
+    private final AuthUserResolver authUserResolver;
     private final ResponseMapper responseMapper;
     private final ScheduleDoctorValidator scheduleDoctorValidator;
     private final ScheduleTimeValidator scheduleTimeValidator;
@@ -91,7 +91,7 @@ public class ScheduleServiceImpl implements ScheduleService{
 
     @Override
     public List<ScheduleResponse> getMySchedules() {
-        User authenticatedUser = findAuthenticatedUser.getAuthenticatedUser();
+        User authenticatedUser = authUserResolver.getAuthenticatedUser();
 
         boolean isDoctor = authenticatedUser.getAuthorities().stream()
                 .anyMatch(a -> Role.DOCTOR.getAuthority().equals(a.getAuthority()));

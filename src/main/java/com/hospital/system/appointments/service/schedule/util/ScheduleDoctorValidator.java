@@ -9,7 +9,7 @@ import com.hospital.system.appointments.exception.ForbiddenException;
 import com.hospital.system.appointments.exception.NotFoundException;
 import com.hospital.system.appointments.repository.DoctorRepository;
 import com.hospital.system.appointments.repository.ScheduleRepository;
-import com.hospital.system.appointments.util.FindAuthenticatedUser;
+import com.hospital.system.appointments.util.AuthUserResolver;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -21,11 +21,11 @@ public class ScheduleDoctorValidator {
 
     private final ScheduleRepository scheduleRepository;
     private final DoctorRepository doctorRepository;
-    private final FindAuthenticatedUser findAuthenticatedUser;
+    private final AuthUserResolver authUserResolver;
 
 
     public Schedule findAndValidateCanManageSchedule(Doctor doctor, long scheduleId) {
-        User authenticatedUser = findAuthenticatedUser.getAuthenticatedUser();
+        User authenticatedUser = authUserResolver.getAuthenticatedUser();
 
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new NotFoundException("Schedule not found with id: " + scheduleId));
@@ -41,7 +41,7 @@ public class ScheduleDoctorValidator {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new NotFoundException("Doctor not found with id: " + doctorId));
 
-        User authenticatedUser = findAuthenticatedUser.getAuthenticatedUser();
+        User authenticatedUser = authUserResolver.getAuthenticatedUser();
 
         if (!isAdmin(authenticatedUser) && !isOwnDoctor(authenticatedUser, doctor)) {
             throw new ForbiddenException("You do not have permission to manage this doctor's schedules");

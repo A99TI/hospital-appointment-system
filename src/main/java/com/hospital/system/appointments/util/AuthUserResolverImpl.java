@@ -5,17 +5,31 @@ import com.hospital.system.appointments.enums.Role;
 import com.hospital.system.appointments.exception.ConflictException;
 import com.hospital.system.appointments.exception.NotFoundException;
 import com.hospital.system.appointments.repository.UserRepository;
+import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
+@AllArgsConstructor
 @Component
-public class FindNonAdminUserImpl implements FindNonAdminUser{
+public class AuthUserResolverImpl implements AuthUserResolver{
 
     private final UserRepository userRepository;
 
-    public FindNonAdminUserImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    @Override
+    public User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if(authentication == null || !authentication.isAuthenticated() ||
+                authentication.getPrincipal().equals("anonymousUser")){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication Required");
+        }
+
+        return (User) authentication.getPrincipal();
     }
 
     @Override
