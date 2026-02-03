@@ -1,7 +1,7 @@
 package com.hospital.system.appointments.controller;
 
 import com.hospital.system.appointments.response.UserResponse;
-import com.hospital.system.appointments.service.AdminService;
+import com.hospital.system.appointments.service.admin.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;

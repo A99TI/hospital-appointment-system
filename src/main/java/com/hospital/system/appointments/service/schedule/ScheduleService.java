@@ -1,4 +1,4 @@
-package com.hospital.system.appointments.service;
+package com.hospital.system.appointments.service.schedule;
 
 import com.hospital.system.appointments.request.ScheduleRequest;
 import com.hospital.system.appointments.response.ScheduleResponse;

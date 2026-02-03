@@ -1,4 +1,4 @@
-package com.hospital.system.appointments.service;
+package com.hospital.system.appointments.service.authentication;
 
 import com.hospital.system.appointments.request.AuthenticationRequest;
 import com.hospital.system.appointments.request.RegisterRequest;

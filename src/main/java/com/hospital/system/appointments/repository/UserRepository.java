@@ -11,6 +11,6 @@ import java.util.Optional;
 public interface UserRepository  extends CrudRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
-    @Query("SELECT COUNT(u) from User u JOIN u.authorities a WHERE a.authority = 'ROLE_ADMIN'")
-    long countAdminUsers();
+    @Query("SELECT COUNT(u) from User u JOIN u.authorities a WHERE a.authority = ?1")
+    long countUsersWithAuthority(String authority);
 }
