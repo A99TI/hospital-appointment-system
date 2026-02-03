@@ -3,7 +3,11 @@ package com.hospital.system.appointments.request;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
+@AllArgsConstructor
+@NoArgsConstructor
 public class RegisterRequest {
 
     @NotEmpty(message = "Email is mandatory")
@@ -13,11 +17,6 @@ public class RegisterRequest {
     @NotEmpty(message = "Password is mandatory")
     @Size(min= 6, max = 50, message = "Password must be between 6 and 50 characters long")
     private String password;
-
-    public RegisterRequest(String email, String password) {
-        this.email = email;
-        this.password = password;
-    }
 
     public String getEmail() {
         return email;
