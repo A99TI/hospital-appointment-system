@@ -19,6 +19,7 @@ import org.springframework.web.context.WebApplicationContext;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -69,7 +70,7 @@ public class AdminControllerIntegrationTest {
     }
 
     @Test
-    void deleteUsers_ShouldDeleteStoredUser() throws  Exception{
+    void deleteNonAdminUsers_ShouldDeleteStoredUser() throws  Exception{
         User adminUser1 = userTestUtil.createAdmin(1);
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
 
@@ -77,13 +78,27 @@ public class AdminControllerIntegrationTest {
 
 
         mockMvc.perform(delete("/api/admin/users/" + user2.getId())
-                .with(reqeust -> {
+                .with(request -> {
                     SecurityContextHolder.getContext().setAuthentication(auth);
-                    return reqeust;
+                    return request;
                 }))
                 .andExpect(status().isNoContent());
 
         assertFalse(userRepository.findById(user2.getId()).isPresent(), "Created user should not exist after deletion");
+
+    }
+
+    @Test
+    void deleteAdminUser_ShouldReturnConflict() throws  Exception{
+        User adminUser1 = userTestUtil.createAdmin(1);
+        UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
+
+        mockMvc.perform(delete("/api/admin/users/" + adminUser1.getId())
+                        .with(request -> {
+                            SecurityContextHolder.getContext().setAuthentication(auth);
+                            return request;
+                        }))
+                .andExpect(status().isConflict());
 
     }
 
