@@ -2,6 +2,7 @@ package com.hospital.system.appointments.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hospital.system.appointments.entity.User;
+import com.hospital.system.appointments.repository.UserRepository;
 import com.hospital.system.appointments.util.UserTestUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -29,6 +32,9 @@ public class AdminControllerIntegrationTest {
 
     @Autowired
     private UserTestUtil userTestUtil;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
@@ -61,6 +67,26 @@ public class AdminControllerIntegrationTest {
                 .andExpect(jsonPath("$[?(@.email == '" + user3.getEmail() + "')]").exists());
 
     }
+
+    @Test
+    void deleteUsers_ShouldDeleteStoredUser() throws  Exception{
+        User adminUser1 = userTestUtil.createAdmin(1);
+        UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
+
+        User user2 = userTestUtil.createUser(2);
+
+
+        mockMvc.perform(delete("/api/admin/users/" + user2.getId())
+                .with(reqeust -> {
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                    return reqeust;
+                }))
+                .andExpect(status().isNoContent());
+
+        assertFalse(userRepository.findById(user2.getId()).isPresent(), "Created user should not exist after deletion");
+
+    }
+
 
 
 }
