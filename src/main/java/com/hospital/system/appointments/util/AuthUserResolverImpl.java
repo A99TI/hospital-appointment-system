@@ -2,7 +2,7 @@ package com.hospital.system.appointments.util;
 
 import com.hospital.system.appointments.entity.User;
 import com.hospital.system.appointments.enums.Role;
-import com.hospital.system.appointments.exception.ConflictException;
+import com.hospital.system.appointments.exception.ForbiddenException;
 import com.hospital.system.appointments.exception.NotFoundException;
 import com.hospital.system.appointments.repository.UserRepository;
 import lombok.AllArgsConstructor;
@@ -38,7 +38,7 @@ public class AuthUserResolverImpl implements AuthUserResolver{
 
         if (user.isEmpty()) throw new NotFoundException("User does not exist");
         if (user.get().getAuthorities().stream().anyMatch(authority -> Role.ADMIN.getAuthority().equals(authority.getAuthority()))) {
-            throw new ConflictException("User is an admin");
+            throw new ForbiddenException("User is an admin");
         }
 
         return user.get();

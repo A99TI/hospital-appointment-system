@@ -98,10 +98,9 @@ public class AdminControllerIntegrationTest {
                             SecurityContextHolder.getContext().setAuthentication(auth);
                             return request;
                         }))
-                .andExpect(status().isConflict());
+                .andExpect(status().isForbidden());
 
     }
-
 
 
 }
