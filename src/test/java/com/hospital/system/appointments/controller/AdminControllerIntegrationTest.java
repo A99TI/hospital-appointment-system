@@ -143,6 +143,26 @@ public class AdminControllerIntegrationTest {
 
     }
 
+    @Test
+    void deleteNonExistentUser_ShouldReturn404() throws  Exception{
+        User adminUser1 = userTestUtil.createAdmin(1);
+        UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
+
+        mockMvc.perform(delete("/api/admin/users/9999").with(authentication(auth)))
+                .andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    void deleteUser_WithNegativeUserId_ShouldReturn400() throws  Exception{
+        User adminUser1 = userTestUtil.createAdmin(1);
+        UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
+
+        mockMvc.perform(delete("/api/admin/users/-1").with(authentication(auth)))
+                .andExpect(status().isBadRequest());
+
+    }
+
 }
 
 
