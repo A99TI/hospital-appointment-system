@@ -134,7 +134,7 @@ public class AdminControllerIntegrationTest {
     }
 
     @Test
-    void deleteAdminUser_ShouldReturnConflict() throws  Exception{
+    void deleteAdminUser_ShouldReturnForbidden() throws  Exception{
         User adminUser1 = userTestUtil.createAdmin(1);
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
 
