@@ -53,15 +53,7 @@ class AuthenticationControllerIntegrationTest {
 
     @Test
     void registerAndLogin_ShouldReturnAuthToken() throws Exception {
-        RegisterRequest registerRequest = new RegisterRequest(
-                "johndoe@email.com",
-                "password123"
-        );
-
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(registerRequest)))
-                .andExpect(status().isCreated());
+        registerDefaultUser();
 
         AuthenticationRequest loginRequest = new AuthenticationRequest();
         loginRequest.setEmail("johndoe@email.com");
@@ -77,15 +69,7 @@ class AuthenticationControllerIntegrationTest {
 
     @Test
     void loginWithWrongPassword_ShouldReturn401() throws Exception {
-        RegisterRequest registerRequest = new RegisterRequest(
-                "johndoe@email.com",
-                "password123"
-        );
-
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(registerRequest)))
-                .andExpect(status().isCreated());
+        registerDefaultUser();
 
         AuthenticationRequest loginRequest = new AuthenticationRequest();
         loginRequest.setEmail("johndoe@email.com");
@@ -96,6 +80,80 @@ class AuthenticationControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isUnauthorized());
 
+    }
+
+    @Test
+    void loginWithNonExistentEmail_ShouldReturn401() throws Exception {
+        registerDefaultUser();
+
+
+        AuthenticationRequest loginRequest = new AuthenticationRequest();
+        loginRequest.setEmail("user123@email.com");
+        loginRequest.setPassword("password1234");
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isUnauthorized());
+
+    }
+
+    @Test
+    void registerWithDuplicateEmails_ShouldReturnConflict() throws Exception {
+        registerDefaultUser();
+
+        RegisterRequest duplicateRegisterRequest = new RegisterRequest(
+                "johndoe@email.com",
+                "password123"
+        );
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(duplicateRegisterRequest)))
+                .andExpect(status().isConflict());
+
+    }
+
+    @Test
+    void registerWithInvalidEmailFormat_ShouldReturnConflict() throws Exception {
+        RegisterRequest registerRequest = new RegisterRequest(
+                "johndoe.email.com",
+                "password123"
+        );
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerRequest)))
+                .andExpect(status().isBadRequest());
+
+    }
+
+
+    @Test
+    void invalidLoginBody_ShouldReturnBadRequest() throws Exception {
+        registerDefaultUser();
+
+        RegisterRequest duplicateRegisterRequest = new RegisterRequest(
+                "johndoe.email.com",
+                "password123"
+        );
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(duplicateRegisterRequest)))
+                .andExpect(status().isBadRequest());
+    }
+
+    private void registerDefaultUser() throws Exception {
+        RegisterRequest registerRequest = new RegisterRequest(
+                "johndoe@email.com",
+                "password123"
+        );
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerRequest)))
+                .andExpect(status().isCreated());
     }
 
 }

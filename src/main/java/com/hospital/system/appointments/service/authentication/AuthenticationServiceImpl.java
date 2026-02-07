@@ -3,6 +3,7 @@ package com.hospital.system.appointments.service.authentication;
 import com.hospital.system.appointments.entity.Authority;
 import com.hospital.system.appointments.entity.User;
 import com.hospital.system.appointments.enums.Role;
+import com.hospital.system.appointments.exception.ConflictException;
 import com.hospital.system.appointments.repository.UserRepository;
 import com.hospital.system.appointments.request.AuthenticationRequest;
 import com.hospital.system.appointments.request.RegisterRequest;
@@ -40,7 +41,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional
     public void register(RegisterRequest registerRequest) throws Exception {
         if (isEmailTaken(registerRequest.getEmail())){
-            throw new Exception("Email is taken");
+            throw new ConflictException("Email is taken");
         }
         User user = buildNewUser(registerRequest);
         userRepository.save(user);
