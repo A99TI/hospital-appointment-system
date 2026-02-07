@@ -85,6 +85,7 @@ class AuthenticationControllerIntegrationTest {
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))
+                .andExpect(status().isCreated());
 
         AuthenticationRequest loginRequest = new AuthenticationRequest();
         loginRequest.setEmail("johndoe@email.com");
