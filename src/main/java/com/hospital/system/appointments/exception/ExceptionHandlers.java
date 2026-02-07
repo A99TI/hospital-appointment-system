@@ -5,6 +5,7 @@ import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,10 +18,19 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class ExceptionHandlers {
 
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ExceptionResponses> handleBadCredentials(
+            BadCredentialsException ex,
+            HttpServletRequest request) {
+        return buildResponseEntity(
+                HttpStatus.UNAUTHORIZED,
+                "Invalid Email or Password",
+                request.getRequestURI()
+                );
+    }
+
     @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<ExceptionResponses> handleResponseStatusException(
-            ResponseStatusException ex,
-            HttpServletRequest request
+    public ResponseEntity<ExceptionResponses> handleResponseStatusException(ResponseStatusException ex, HttpServletRequest request
     ) {
         HttpStatus status = HttpStatus.valueOf(ex.getStatusCode().value());
         String message = ex.getReason() != null ? ex.getReason() : ex.getMessage();

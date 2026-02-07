@@ -74,5 +74,27 @@ class AuthenticationControllerIntegrationTest {
                 .andExpect(jsonPath("$.token").exists())
                 .andExpect(jsonPath("$.token").isNotEmpty());
     }
-    
+
+    @Test
+    void loginWithWrongPassword_ShouldReturn401() throws Exception {
+        RegisterRequest registerRequest = new RegisterRequest(
+                "johndoe@email.com",
+                "password123"
+        );
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerRequest)))
+
+        AuthenticationRequest loginRequest = new AuthenticationRequest();
+        loginRequest.setEmail("johndoe@email.com");
+        loginRequest.setPassword("password1234");
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isUnauthorized());
+
+    }
+
 }
