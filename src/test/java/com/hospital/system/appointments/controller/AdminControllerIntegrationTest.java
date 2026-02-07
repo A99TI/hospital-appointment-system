@@ -9,14 +9,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -38,13 +39,12 @@ public class AdminControllerIntegrationTest {
     private UserRepository userRepository;
 
     private MockMvc mockMvc;
-    private ObjectMapper objectMapper;
-
 
     @BeforeEach
     void setUp(){
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        objectMapper = new ObjectMapper();
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+                .apply(SecurityMockMvcConfigurers.springSecurity())
+                .build();
     }
 
     @Test
@@ -55,11 +55,7 @@ public class AdminControllerIntegrationTest {
         User user2 = userTestUtil.createUser(2);
         User user3 = userTestUtil.createUser(3);
 
-        mockMvc.perform(get("/api/admin/users")
-                        .with(request -> {
-                            SecurityContextHolder.getContext().setAuthentication(auth);
-                            return request;
-                        }))
+        mockMvc.perform(get("/api/admin/users").with(authentication(auth)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(3))
@@ -77,11 +73,7 @@ public class AdminControllerIntegrationTest {
         User user2 = userTestUtil.createUser(2);
 
 
-        mockMvc.perform(delete("/api/admin/users/" + user2.getId())
-                .with(request -> {
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                    return request;
-                }))
+        mockMvc.perform(delete("/api/admin/users/" + user2.getId()).with(authentication(auth)))
                 .andExpect(status().isNoContent());
 
         assertFalse(userRepository.findById(user2.getId()).isPresent(), "Created user should not exist after deletion");
@@ -93,15 +85,41 @@ public class AdminControllerIntegrationTest {
         User adminUser1 = userTestUtil.createAdmin(1);
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
 
-        mockMvc.perform(delete("/api/admin/users/" + adminUser1.getId())
-                        .with(request -> {
-                            SecurityContextHolder.getContext().setAuthentication(auth);
-                            return request;
-                        }))
+        mockMvc.perform(delete("/api/admin/users/" + adminUser1.getId()).with(authentication(auth)))
                 .andExpect(status().isForbidden());
 
     }
 
+    @Test
+    void getUsers_WhenUnauthenticated_ShouldReturn401() throws Exception {
+        mockMvc.perform(get("/api/admin/users"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void deleteUser_WhenUnauthenticated_ShouldReturn401() throws Exception {
+        mockMvc.perform(delete("/api/admin/users/1"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void getUsers_WhenNonAdmin_ShouldReturn403() throws Exception {
+        User regularUser = userTestUtil.createUser(1);
+        UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(regularUser);
+
+        mockMvc.perform(get("/api/admin/users").with(authentication(auth)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deleteUser_WhenNonAdmin_ShouldReturn403() throws Exception {
+        User regularUser = userTestUtil.createUser(1);
+        User userToDelete = userTestUtil.createUser(2);
+        UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(regularUser);
+
+        mockMvc.perform(delete("/api/admin/users/" + userToDelete.getId()).with(authentication(auth)))
+                .andExpect(status().isForbidden());
+    }
 
 }
 
