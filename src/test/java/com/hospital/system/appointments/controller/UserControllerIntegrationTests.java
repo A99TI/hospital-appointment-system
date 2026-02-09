@@ -52,7 +52,10 @@ public class UserControllerIntegrationTests {
 
     public static Stream<MvcEndpointTestSupport.EndpointSpec> getAllUserEndpoints(){
         return Stream.<MvcEndpointTestSupport.EndpointSpec>of(
-                new MvcEndpointTestSupport.EndpointSpec(HttpMethod.GET, "/api/user/info", null)
+                new MvcEndpointTestSupport.EndpointSpec(HttpMethod.GET, "/api/user/info", null),
+                new MvcEndpointTestSupport.EndpointSpec(HttpMethod.DELETE, "/api/user", null),
+                new MvcEndpointTestSupport.EndpointSpec(HttpMethod.PUT, "/api/user/password",
+                        "{\"oldPassword\":\"test123456\",\"newPassword\":\"test123456\",\"newPasswordConfirmation\":\"test123456\"}")
         );
     }
 
