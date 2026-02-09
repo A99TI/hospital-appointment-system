@@ -2,6 +2,7 @@ package com.hospital.system.appointments.controller;
 
 import com.hospital.system.appointments.entity.User;
 import com.hospital.system.appointments.repository.UserRepository;
+import com.hospital.system.appointments.support.MvcEndpointTestSupport;
 import com.hospital.system.appointments.util.UserTestUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.stream.Stream;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -33,26 +36,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class AdminControllerIntegrationTest {
 
-    public static java.util.stream.Stream<AdminEndpointSpec> getAllAdminEndpoints() {
-        return java.util.stream.Stream.<AdminEndpointSpec>of(
-                new AdminEndpointSpec(HttpMethod.GET, "/api/admin/users", null),
-                new AdminEndpointSpec(HttpMethod.DELETE, "/api/admin/users/1", null),
-                new AdminEndpointSpec(HttpMethod.PUT, "/api/admin/users/1/promote-to-admin", null),
-                new AdminEndpointSpec(HttpMethod.PUT, "/api/admin/users/1/promote-to-doctor",
-                        "{\"fullName\":\"Dr A\",\"specialisation\":\"GP\",\"roomNumber\":\"1\",\"active\":true}")
-        );
-    }
-
-    public record AdminEndpointSpec(HttpMethod method, String path, String requestBody) {}
-
     @Autowired
     private WebApplicationContext webApplicationContext;
-
     @Autowired
     private UserTestUtil userTestUtil;
-
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private MvcEndpointTestSupport mvcEndpointTestSupport;
 
     private MockMvc mockMvc;
 
@@ -63,41 +54,28 @@ public class AdminControllerIntegrationTest {
                 .build();
     }
 
-    private void performAdminEndpointAndExpect(
-            AdminEndpointSpec spec, UsernamePasswordAuthenticationToken auth, int expectedStatus) throws Exception {
-        MockHttpServletRequestBuilder request = buildRequest(spec);
-        if (auth != null) {
-            request = request.with(authentication(auth));
-        }
-        mockMvc.perform(request).andExpect(status().is(expectedStatus));
-    }
-
-    private MockHttpServletRequestBuilder buildRequest(AdminEndpointSpec spec) {
-        if (spec.method() == HttpMethod.GET) {
-            return get(spec.path());
-        }
-        if (spec.method() == HttpMethod.DELETE) {
-            return delete(spec.path());
-        }
-        if (spec.method() == HttpMethod.PUT) {
-            MockHttpServletRequestBuilder putRequest = put(spec.path()).contentType(MediaType.APPLICATION_JSON);
-            return spec.requestBody() != null ? putRequest.content(spec.requestBody()) : putRequest;
-        }
-        throw new IllegalStateException("Unexpected method: " + spec.method());
+    public static Stream<MvcEndpointTestSupport.EndpointSpec> getAllAdminEndpoints() {
+        return  Stream.<MvcEndpointTestSupport.EndpointSpec>of(
+                new MvcEndpointTestSupport.EndpointSpec(HttpMethod.GET, "/api/admin/users", null),
+                new MvcEndpointTestSupport.EndpointSpec(HttpMethod.DELETE, "/api/admin/users/1", null),
+                new MvcEndpointTestSupport.EndpointSpec(HttpMethod.PUT, "/api/admin/users/1/promote-to-admin", null),
+                new MvcEndpointTestSupport.EndpointSpec(HttpMethod.PUT, "/api/admin/users/1/promote-to-doctor",
+                        "{\"fullName\":\"Dr A\",\"specialisation\":\"GP\",\"roomNumber\":\"1\",\"active\":true}")
+        );
     }
 
     @ParameterizedTest
     @MethodSource("getAllAdminEndpoints")
-    void WhenUnauthenticated_ShouldReturn401(AdminEndpointSpec endpoint) throws Exception {
-        performAdminEndpointAndExpect(endpoint, null, 401);
+    void WhenUnauthenticated_ShouldReturn401(MvcEndpointTestSupport.EndpointSpec endpoint) throws Exception {
+        mvcEndpointTestSupport.performEndpointAndExpect(mockMvc, endpoint, null, 401);
     }
 
     @ParameterizedTest
     @MethodSource("getAllAdminEndpoints")
-    void WhenNonAdmin_ShouldReturn403(AdminEndpointSpec endpoint) throws Exception {
+    void WhenNonAdmin_ShouldReturn403(MvcEndpointTestSupport.EndpointSpec endpoint) throws Exception {
         User regularUser = userTestUtil.createUser(1);
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(regularUser);
-        performAdminEndpointAndExpect(endpoint, auth, 403);
+        mvcEndpointTestSupport.performEndpointAndExpect(mockMvc, endpoint, auth, 403);
     }
 
     @Test
