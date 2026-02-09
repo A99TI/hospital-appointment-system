@@ -32,6 +32,7 @@ public class UserTestUtil {
 
     public User createAdmin(int userNum) {
         List<Authority> authorities = new ArrayList<>();
+        authorities.add(new Authority(Role.USER.getAuthority()));
         authorities.add(new Authority(Role.ADMIN.getAuthority()));
 
         return this.createAndSaveUser(userNum, authorities);

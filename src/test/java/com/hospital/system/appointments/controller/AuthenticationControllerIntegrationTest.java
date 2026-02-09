@@ -86,7 +86,6 @@ public class AuthenticationControllerIntegrationTest {
     void loginWithNonExistentEmail_ShouldReturn401() throws Exception {
         registerDefaultUser();
 
-
         AuthenticationRequest loginRequest = new AuthenticationRequest();
         loginRequest.setEmail("user123@email.com");
         loginRequest.setPassword("password1234");
