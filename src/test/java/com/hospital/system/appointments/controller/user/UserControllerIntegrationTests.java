@@ -1,4 +1,4 @@
-package com.hospital.system.appointments.controller;
+package com.hospital.system.appointments.controller.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hospital.system.appointments.entity.User;
