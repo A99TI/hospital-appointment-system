@@ -39,7 +39,7 @@ public class AuthenticationControllerIntegrationTest {
     }
 
     @Test
-    void register_ShouldCreateUserAndReturnCreatedStatus() throws Exception {
+    void register_withValidRequest_returns201() throws Exception {
         RegisterRequest registerRequest = new RegisterRequest(
                 "johndoe@email.com",
                 "password123"
@@ -52,7 +52,7 @@ public class AuthenticationControllerIntegrationTest {
     }
 
     @Test
-    void registerAndLogin_ShouldReturnAuthToken() throws Exception {
+    void login_afterRegistration_returns200WithToken() throws Exception {
         registerDefaultUser();
 
         AuthenticationRequest loginRequest = new AuthenticationRequest();
@@ -68,7 +68,7 @@ public class AuthenticationControllerIntegrationTest {
     }
 
     @Test
-    void loginWithWrongPassword_ShouldReturn401() throws Exception {
+    void login_withIncorrectPassword_returns401() throws Exception {
         registerDefaultUser();
 
         AuthenticationRequest loginRequest = new AuthenticationRequest();
@@ -83,7 +83,7 @@ public class AuthenticationControllerIntegrationTest {
     }
 
     @Test
-    void loginWithNonExistentEmail_ShouldReturn401() throws Exception {
+    void login_withNonExistentEmail_returns401() throws Exception {
         registerDefaultUser();
 
         AuthenticationRequest loginRequest = new AuthenticationRequest();
@@ -98,7 +98,7 @@ public class AuthenticationControllerIntegrationTest {
     }
 
     @Test
-    void registerWithDuplicateEmails_ShouldReturnConflict() throws Exception {
+    void register_withDuplicateEmail_returns409() throws Exception {
         registerDefaultUser();
 
         RegisterRequest duplicateRegisterRequest = new RegisterRequest(
@@ -114,7 +114,7 @@ public class AuthenticationControllerIntegrationTest {
     }
 
     @Test
-    void registerWithInvalidEmailFormat_ShouldReturnConflict() throws Exception {
+    void register_withInvalidEmailFormat_returns400() throws Exception {
         RegisterRequest registerRequest = new RegisterRequest(
                 "johndoe.email.com",
                 "password123"
@@ -129,7 +129,7 @@ public class AuthenticationControllerIntegrationTest {
 
 
     @Test
-    void invalidLoginBody_ShouldReturnBadRequest() throws Exception {
+    void register_withMalformedEmail_returns400() throws Exception {
         registerDefaultUser();
 
         RegisterRequest duplicateRegisterRequest = new RegisterRequest(

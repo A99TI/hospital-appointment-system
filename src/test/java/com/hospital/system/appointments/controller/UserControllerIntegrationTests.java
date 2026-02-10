@@ -33,7 +33,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -76,12 +75,12 @@ public class UserControllerIntegrationTests {
 
     @ParameterizedTest
     @MethodSource("getAllUserEndpoints")
-    void WhenUnauthenticated_ShouldReturn401(MvcEndpointTestSupport.EndpointSpec endpoint) throws Exception {
+    void protectedUserEndpoints_whenUnauthenticated_returns401(MvcEndpointTestSupport.EndpointSpec endpoint) throws Exception {
         mvcEndpointTestSupport.performEndpointAndExpect(mockMvc, endpoint, null, 401);
     }
 
     @Test
-    void getUserInfo_ShouldReturnUserInfo() throws Exception{
+    void getUserInfo_whenAuthenticated_returns200WithUserAndAuthorities() throws Exception {
         User adminUser1 = userTestUtil.createAdmin(1);
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
 
@@ -95,7 +94,7 @@ public class UserControllerIntegrationTests {
     }
 
     @Test
-    void deleteRegularUser_ShouldDeleteUser() throws Exception{
+    void deleteAccount_whenAuthenticatedAsRegularUser_returns204AndDeletesUser() throws Exception {
 
         User user1 = userTestUtil.createUser(1);
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(user1);
@@ -109,7 +108,7 @@ public class UserControllerIntegrationTests {
     }
 
     @Test
-    void deleteLastAdminUser_ShouldReturnForbidden() throws Exception{
+    void deleteAccount_whenAuthenticatedAsLastAdmin_returns403() throws Exception {
 
         User adminUser1 = userTestUtil.createAdmin(1);
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
@@ -122,7 +121,7 @@ public class UserControllerIntegrationTests {
     }
 
     @Test
-    void updatePassword_ShouldUpdatePassword() throws Exception {
+    void updatePassword_withValidCurrentPassword_returns204AndStoresNewPassword() throws Exception {
         User adminUser1 = userTestUtil.createAdmin(1);
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
 
@@ -148,7 +147,7 @@ public class UserControllerIntegrationTests {
     }
 
     @Test
-    void updatePassword_WithWrongPassword_ShouldReturnBadRequest() throws Exception {
+    void updatePassword_withIncorrectCurrentPassword_returns400() throws Exception {
         User adminUser1 = userTestUtil.createAdmin(1);
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
 
@@ -169,7 +168,7 @@ public class UserControllerIntegrationTests {
     }
 
     @Test
-    void updatePassword_WithWrngFormat_ShouldReturnBadRequest() throws Exception {
+    void updatePassword_withInvalidNewPasswordFormat_returns400() throws Exception {
         User adminUser1 = userTestUtil.createAdmin(1);
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
 

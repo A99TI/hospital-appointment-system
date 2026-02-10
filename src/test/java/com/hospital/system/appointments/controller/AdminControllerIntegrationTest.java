@@ -66,20 +66,20 @@ public class AdminControllerIntegrationTest {
 
     @ParameterizedTest
     @MethodSource("getAllAdminEndpoints")
-    void WhenUnauthenticated_ShouldReturn401(MvcEndpointTestSupport.EndpointSpec endpoint) throws Exception {
+    void adminEndpoints_whenUnauthenticated_returns401(MvcEndpointTestSupport.EndpointSpec endpoint) throws Exception {
         mvcEndpointTestSupport.performEndpointAndExpect(mockMvc, endpoint, null, 401);
     }
 
     @ParameterizedTest
     @MethodSource("getAllAdminEndpoints")
-    void WhenNonAdmin_ShouldReturn403(MvcEndpointTestSupport.EndpointSpec endpoint) throws Exception {
+    void adminEndpoints_whenAuthenticatedAsNonAdmin_returns403(MvcEndpointTestSupport.EndpointSpec endpoint) throws Exception {
         User regularUser = userTestUtil.createUser(1);
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(regularUser);
         mvcEndpointTestSupport.performEndpointAndExpect(mockMvc, endpoint, auth, 403);
     }
 
     @Test
-    void getAllUsers_ShouldReturnAllUsers() throws  Exception{
+    void getAllUsers_whenAuthenticatedAsAdmin_returns200WithAllUsers() throws Exception {
         User adminUser1 = userTestUtil.createAdmin(1);
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
 
@@ -97,7 +97,7 @@ public class AdminControllerIntegrationTest {
     }
 
     @Test
-    void deleteNonAdminUsers_ShouldDeleteStoredUser() throws  Exception{
+    void deleteUser_whenTargetIsNonAdmin_returns204AndDeletesUser() throws Exception {
         User adminUser1 = userTestUtil.createAdmin(1);
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
 
@@ -112,7 +112,7 @@ public class AdminControllerIntegrationTest {
     }
 
     @Test
-    void deleteAdminUser_ShouldReturnForbidden() throws  Exception{
+    void deleteUser_whenTargetIsAdmin_returns403() throws Exception {
         User adminUser1 = userTestUtil.createAdmin(1);
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
 
@@ -122,7 +122,7 @@ public class AdminControllerIntegrationTest {
     }
 
     @Test
-    void deleteNonExistentUser_ShouldReturn404() throws  Exception{
+    void deleteUser_whenUserIdNotFound_returns404() throws Exception {
         User adminUser1 = userTestUtil.createAdmin(1);
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
 
@@ -132,7 +132,7 @@ public class AdminControllerIntegrationTest {
     }
 
     @Test
-    void deleteUser_WithNegativeUserId_ShouldReturn400() throws  Exception{
+    void deleteUser_whenUserIdNegative_returns400() throws Exception {
         User adminUser1 = userTestUtil.createAdmin(1);
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
 
