@@ -38,7 +38,7 @@ public class UserTestUtil {
         return this.createAndSaveUser(userNum, authorities);
     }
 
-    public User createAndSaveUser(int userNum,  List<Authority> authorities){
+    private User createAndSaveUser(int userNum,  List<Authority> authorities){
         User user = new User();
         user.setEmail("user" + userNum + "@email.com");
         user.setPassword(passwordEncoder.encode("password" + userNum));

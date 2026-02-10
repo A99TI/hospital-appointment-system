@@ -2,6 +2,7 @@ package com.hospital.system.appointments.controller;
 
 import com.hospital.system.appointments.entity.User;
 import com.hospital.system.appointments.enums.Role;
+import com.hospital.system.appointments.repository.UserRepository;
 import com.hospital.system.appointments.support.MvcEndpointTestSupport;
 import com.hospital.system.appointments.util.UserTestUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,8 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -38,6 +41,8 @@ public class UserControllerIntegrationTests {
     private WebApplicationContext webApplicationContext;
     @Autowired
     private UserTestUtil userTestUtil;
+    @Autowired
+    private UserRepository userRepository;
     @Autowired
     private MvcEndpointTestSupport mvcEndpointTestSupport;
 
@@ -78,5 +83,33 @@ public class UserControllerIntegrationTests {
                 .andExpect(jsonPath("$.authorities[*].authority").value(hasItem(Role.USER.getAuthority())))
                 .andExpect(jsonPath("$.authorities[*].authority").value(hasItem(Role.ADMIN.getAuthority())));
     }
+
+    @Test
+    void deleteRegularUser_ShouldDeleteUser() throws Exception{
+
+        User user1 = userTestUtil.createUser(1);
+        UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(user1);
+
+
+        mockMvc.perform(delete("/api/users").with(authentication(auth)))
+                .andExpect(status().isNoContent());
+
+        assertFalse(userRepository.findById(user1.getId()).isPresent(), "Created user should not exist after deletion");
+
+    }
+
+    @Test
+    void deleteLastAdminUser_ShouldReturnForbidden() throws Exception{
+
+        User adminUser1 = userTestUtil.createAdmin(1);
+        UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
+
+        mockMvc.perform(delete("/api/users").with(authentication(auth)))
+                .andExpect(status().isForbidden());
+
+        assertTrue(userRepository.findById(adminUser1.getId()).isPresent(), "Created user should be present within the database");
+
+    }
+    
 
 }
