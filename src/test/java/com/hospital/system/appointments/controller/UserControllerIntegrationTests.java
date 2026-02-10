@@ -1,8 +1,11 @@
 package com.hospital.system.appointments.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hospital.system.appointments.entity.User;
 import com.hospital.system.appointments.enums.Role;
+import com.hospital.system.appointments.exception.NotFoundException;
 import com.hospital.system.appointments.repository.UserRepository;
+import com.hospital.system.appointments.request.PasswordUpdateRequest;
 import com.hospital.system.appointments.support.MvcEndpointTestSupport;
 import com.hospital.system.appointments.util.UserTestUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +16,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -28,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -45,14 +51,18 @@ public class UserControllerIntegrationTests {
     private UserRepository userRepository;
     @Autowired
     private MvcEndpointTestSupport mvcEndpointTestSupport;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private MockMvc mockMvc;
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp(){
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
                 .apply(SecurityMockMvcConfigurers.springSecurity())
                 .build();
+        objectMapper = new ObjectMapper();
     }
 
     public static Stream<MvcEndpointTestSupport.EndpointSpec> getAllUserEndpoints(){
@@ -110,6 +120,75 @@ public class UserControllerIntegrationTests {
         assertTrue(userRepository.findById(adminUser1.getId()).isPresent(), "Created user should be present within the database");
 
     }
-    
+
+    @Test
+    void updatePassword_ShouldUpdatePassword() throws Exception {
+        User adminUser1 = userTestUtil.createAdmin(1);
+        UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
+
+        String currentPassword = "password1";
+        String newPassword = "test123";
+        PasswordUpdateRequest passwordUpdateRequest = new PasswordUpdateRequest(
+                currentPassword,
+                newPassword,
+                newPassword
+        );
+
+        mockMvc.perform(put("/api/users/password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(passwordUpdateRequest))
+                .with(authentication(auth))
+        ).andExpect(status().isNoContent());
+
+        User updatedUser = userRepository.findById(adminUser1.getId())
+                .orElseThrow(() -> new NotFoundException("Updated user cannot be found"));
+
+        assertTrue(passwordEncoder.matches(newPassword, updatedUser.getPassword()),
+                "New password should match the password stored in database");
+    }
+
+    @Test
+    void updatePassword_WithWrongPassword_ShouldReturnBadRequest() throws Exception {
+        User adminUser1 = userTestUtil.createAdmin(1);
+        UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
+
+        String currentPassword = "";
+        String newPassword = "test123";
+        PasswordUpdateRequest passwordUpdateRequest = new PasswordUpdateRequest(
+                currentPassword,
+                newPassword,
+                newPassword
+        );
+
+        mockMvc.perform(put("/api/users/password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(passwordUpdateRequest))
+                .with(authentication(auth))
+        ).andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    void updatePassword_WithWrngFormat_ShouldReturnBadRequest() throws Exception {
+        User adminUser1 = userTestUtil.createAdmin(1);
+        UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
+
+        String currentPassword = "password1";
+        String newPassword = "test";
+        PasswordUpdateRequest passwordUpdateRequest = new PasswordUpdateRequest(
+                currentPassword,
+                newPassword,
+                newPassword
+        );
+
+        mockMvc.perform(put("/api/users/password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(passwordUpdateRequest))
+                .with(authentication(auth))
+        )
+                .andExpect(status().isBadRequest());
+
+    }
+
 
 }
