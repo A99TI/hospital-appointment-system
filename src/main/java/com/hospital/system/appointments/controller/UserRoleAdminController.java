@@ -32,7 +32,7 @@ public class UserRoleAdminController {
 
     @Operation(summary = "Promote user to doctor", description = "Promote user to doctor role")
     @ResponseStatus(HttpStatus.CREATED)
-    @PutMapping("/{userId}/promote-to-doctor")
+    @PostMapping("/{userId}/promote-to-doctor")
     public DoctorResponse promoteToDoctor(@PathVariable @Min(1) long userId, @Valid @RequestBody DoctorRequest doctorRequest){
         return userRoleAdminService.promoteToDoctor(userId, doctorRequest);
     }
