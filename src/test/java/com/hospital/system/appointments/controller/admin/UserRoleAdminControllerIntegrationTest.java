@@ -148,6 +148,30 @@ public class UserRoleAdminControllerIntegrationTest {
 
     }
 
+    @Test
+    void promoteToDoctor_withInvalidBody_return400() throws Exception{
+        User adminUser1 = userTestUtil.createAdmin(1);
+        UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
+
+        User user2 = userTestUtil.createUser(2);
+        String fullName = "Dr Adam Smith";
+        String specialisation = "";
+        String roomNumber = "101A";
+
+        DoctorRequest doctorRequest = new DoctorRequest();
+        doctorRequest.setFullName(fullName);
+        doctorRequest.setSpecialisation(specialisation);
+        doctorRequest.setRoomNumber(roomNumber);
+
+        mockMvc.perform(post("/api/admin/users/"+user2.getId()+"/promote-to-doctor")
+                        .with(authentication(auth))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(doctorRequest)))
+                .andExpect(status().isBadRequest());
+        
+
+    }
+
 
     
 }
