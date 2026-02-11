@@ -100,4 +100,29 @@ public class UserRoleAdminControllerIntegrationTest {
         assertTrue(doctorRepository.findByUserId(user2.getId()).isPresent(), "Doctor not found in Db");
 
     }
+
+    @Test
+    void promoteNonExistentUser_return404() throws Exception{
+        User adminUser1 = userTestUtil.createAdmin(1);
+        UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
+
+        String fullName = "Dr Adam Smith";
+        String specialisation = "General";
+        String roomNumber = "101A";
+
+        DoctorRequest doctorRequest = new DoctorRequest();
+        doctorRequest.setFullName(fullName);
+        doctorRequest.setSpecialisation(specialisation);
+        doctorRequest.setRoomNumber(roomNumber);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/admin/users/"+999+"/promote-to-doctor")
+                        .with(authentication(auth))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(doctorRequest)))
+                .andExpect(status().isNotFound());
+
+    }
+
+
+    
 }
