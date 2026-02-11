@@ -23,11 +23,11 @@ import org.springframework.web.context.WebApplicationContext;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -82,7 +82,7 @@ public class UserRoleAdminControllerIntegrationTest {
         doctorRequest.setSpecialisation(specialisation);
         doctorRequest.setRoomNumber(roomNumber);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/admin/users/"+user2.getId()+"/promote-to-doctor")
+        mockMvc.perform(post("/api/admin/users/"+user2.getId()+"/promote-to-doctor")
                         .with(authentication(auth))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(doctorRequest)))
@@ -102,7 +102,19 @@ public class UserRoleAdminControllerIntegrationTest {
     }
 
     @Test
-    void promoteNonExistentUser_return404() throws Exception{
+    void promoteNonExistentUserToAdmin_return404() throws Exception{
+        User adminUser1 = userTestUtil.createAdmin(1);
+        UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
+
+        mockMvc.perform(put("/api/admin/users/"+999+"/promote-to-admin")
+                        .with(authentication(auth)))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    void promoteNonExistentUserToDoctor_return404() throws Exception{
         User adminUser1 = userTestUtil.createAdmin(1);
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
 
@@ -115,7 +127,7 @@ public class UserRoleAdminControllerIntegrationTest {
         doctorRequest.setSpecialisation(specialisation);
         doctorRequest.setRoomNumber(roomNumber);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/admin/users/"+999+"/promote-to-doctor")
+        mockMvc.perform(post("/api/admin/users/"+999+"/promote-to-doctor")
                         .with(authentication(auth))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(doctorRequest)))
