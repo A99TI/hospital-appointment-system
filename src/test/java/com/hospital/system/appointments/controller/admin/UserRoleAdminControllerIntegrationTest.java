@@ -73,14 +73,7 @@ public class UserRoleAdminControllerIntegrationTest {
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
 
         User user2 = userTestUtil.createUser(2);
-        String fullName = "Dr Adam Smith";
-        String specialisation = "General";
-        String roomNumber = "101A";
-
-        DoctorRequest doctorRequest = new DoctorRequest();
-        doctorRequest.setFullName(fullName);
-        doctorRequest.setSpecialisation(specialisation);
-        doctorRequest.setRoomNumber(roomNumber);
+        DoctorRequest doctorRequest = createDoctorRequest();
 
         mockMvc.perform(post("/api/admin/users/"+user2.getId()+"/promote-to-doctor")
                         .with(authentication(auth))
@@ -90,9 +83,9 @@ public class UserRoleAdminControllerIntegrationTest {
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.userId").value(user2.getId()))
                 .andExpect(jsonPath("$.email").value(user2.getEmail()))
-                .andExpect(jsonPath("$.fullName").value(fullName))
-                .andExpect(jsonPath("$.specialisation").value(specialisation))
-                .andExpect(jsonPath("$.roomNumber").value(roomNumber))
+                .andExpect(jsonPath("$.fullName").value(doctorRequest.getFullName()))
+                .andExpect(jsonPath("$.specialisation").value(doctorRequest.getSpecialisation()))
+                .andExpect(jsonPath("$.roomNumber").value(doctorRequest.getRoomNumber()))
                 .andExpect(jsonPath("$.active").value(true))
                 .andExpect(jsonPath("$.authorities[*].authority").value(hasItem(Role.USER.getAuthority())))
                 .andExpect(jsonPath("$.authorities[*].authority").value(hasItem(Role.DOCTOR.getAuthority())));
@@ -110,7 +103,6 @@ public class UserRoleAdminControllerIntegrationTest {
                         .with(authentication(auth)))
                 .andDo(print())
                 .andExpect(status().isNotFound());
-
     }
 
     @Test
@@ -118,21 +110,13 @@ public class UserRoleAdminControllerIntegrationTest {
         User adminUser1 = userTestUtil.createAdmin(1);
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
 
-        String fullName = "Dr Adam Smith";
-        String specialisation = "General";
-        String roomNumber = "101A";
-
-        DoctorRequest doctorRequest = new DoctorRequest();
-        doctorRequest.setFullName(fullName);
-        doctorRequest.setSpecialisation(specialisation);
-        doctorRequest.setRoomNumber(roomNumber);
+        DoctorRequest doctorRequest = createDoctorRequest();
 
         mockMvc.perform(post("/api/admin/users/"+999+"/promote-to-doctor")
                         .with(authentication(auth))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(doctorRequest)))
                 .andExpect(status().isNotFound());
-
     }
 
     @Test
@@ -154,8 +138,20 @@ public class UserRoleAdminControllerIntegrationTest {
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminUser1);
 
         User user2 = userTestUtil.createUser(2);
+        DoctorRequest doctorRequest = createDoctorRequest();
+        doctorRequest.setSpecialisation("");
+
+        mockMvc.perform(post("/api/admin/users/"+user2.getId()+"/promote-to-doctor")
+                        .with(authentication(auth))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(doctorRequest)))
+                .andExpect(status().isBadRequest());
+    }
+
+
+    private DoctorRequest createDoctorRequest(){
         String fullName = "Dr Adam Smith";
-        String specialisation = "";
+        String specialisation = "General";
         String roomNumber = "101A";
 
         DoctorRequest doctorRequest = new DoctorRequest();
@@ -163,15 +159,8 @@ public class UserRoleAdminControllerIntegrationTest {
         doctorRequest.setSpecialisation(specialisation);
         doctorRequest.setRoomNumber(roomNumber);
 
-        mockMvc.perform(post("/api/admin/users/"+user2.getId()+"/promote-to-doctor")
-                        .with(authentication(auth))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(doctorRequest)))
-                .andExpect(status().isBadRequest());
-        
-
+        return doctorRequest;
     }
-
 
     
 }
