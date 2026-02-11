@@ -135,6 +135,19 @@ public class UserRoleAdminControllerIntegrationTest {
 
     }
 
+    @Test
+    void promoteAlreadyAdminToAdmin_return403() throws Exception{
+        User admin1 = userTestUtil.createAdmin(1);
+        UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(admin1);
+
+        User admin2 = userTestUtil.createAdmin(1);
+
+        mockMvc.perform(put("/api/admin/users/"+admin2.getId()+"/promote-to-admin")
+                        .with(authentication(auth)))
+                .andExpect(status().isForbidden());
+
+    }
+
 
     
 }
