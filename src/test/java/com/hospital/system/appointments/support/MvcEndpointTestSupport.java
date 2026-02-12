@@ -36,6 +36,10 @@ public class MvcEndpointTestSupport {
             MockHttpServletRequestBuilder putRequest = put(spec.path()).contentType(MediaType.APPLICATION_JSON);
             return spec.requestBody() != null ? putRequest.content(spec.requestBody()) : putRequest;
         }
+        if (spec.method() == HttpMethod.POST) {
+            MockHttpServletRequestBuilder postRequest = post(spec.path()).contentType(MediaType.APPLICATION_JSON);
+            return spec.requestBody() != null ? postRequest.content(spec.requestBody()) : postRequest;
+        }
         throw new IllegalStateException("Unexpected method: " + spec.method());
     }
 }
