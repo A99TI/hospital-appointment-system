@@ -2,8 +2,10 @@ package com.hospital.system.appointments.util;
 
 
 import com.hospital.system.appointments.entity.Authority;
+import com.hospital.system.appointments.entity.Doctor;
 import com.hospital.system.appointments.entity.User;
 import com.hospital.system.appointments.enums.Role;
+import com.hospital.system.appointments.repository.DoctorRepository;
 import com.hospital.system.appointments.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,7 +20,8 @@ public class UserTestUtil {
 
     @Autowired
     private UserRepository userRepository;
-
+    @Autowired
+    private DoctorRepository doctorRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -36,6 +39,24 @@ public class UserTestUtil {
         authorities.add(new Authority(Role.ADMIN.getAuthority()));
 
         return this.createAndSaveUser(userNum, authorities);
+    }
+
+    public Doctor createDoctor(int userNum) {
+        List<Authority> authorities = new ArrayList<>();
+        authorities.add(new Authority(Role.USER.getAuthority()));
+        authorities.add(new Authority(Role.DOCTOR.getAuthority()));
+
+        User user = this.createAndSaveUser(userNum, authorities);
+
+        Doctor doctor = new Doctor();
+        doctor.setUser(user);
+        doctor.setFullName("user "+userNum);
+        doctor.setSpecialisation("general");
+        doctor.setRoomNumber("room"+userNum);
+        doctor.setActive(true);
+
+        return doctorRepository.save(doctor);
+
     }
 
     private User createAndSaveUser(int userNum,  List<Authority> authorities){
