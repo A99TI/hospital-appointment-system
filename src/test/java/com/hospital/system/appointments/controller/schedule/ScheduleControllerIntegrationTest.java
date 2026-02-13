@@ -29,9 +29,10 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -158,6 +159,46 @@ public class ScheduleControllerIntegrationTest {
                 .andExpect(status().isForbidden());
     }
 
+    @Test
+    void updateSchedule_returns200() throws Exception{
+        Doctor doctorOne = userTestUtil.createDoctor(1);
+        UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(doctorOne.getUser());
+
+        Schedule schedule = scheduleRepository.save(createDefaultSchedule(doctorOne));
+
+        ScheduleRequest updatedScheduleRequest = createDefaultScheduleRequest();
+        updatedScheduleRequest.setDayOfWeek(DayOfWeek.FRIDAY);
+
+        mockMvc.perform(put("/api/doctors/{doctorId}/schedules/{scheduleId}", doctorOne.getId(), schedule.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedScheduleRequest))
+                        .with(authentication(auth)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.id").isNumber())
+                .andExpect(jsonPath("$.doctorId").value(doctorOne.getId()))
+                .andExpect(jsonPath("$.dayOfWeek").value(updatedScheduleRequest.getDayOfWeek().toString()))
+                .andExpect(jsonPath("$.startTime").value(updatedScheduleRequest.getStartTime().format(DateTimeFormatter.ISO_LOCAL_TIME)))
+                .andExpect(jsonPath("$.endTime").value(updatedScheduleRequest.getEndTime().format(DateTimeFormatter.ISO_LOCAL_TIME)))
+                .andExpect(jsonPath("$.maxPatients").value(updatedScheduleRequest.getMaxPatients()));
+
+    }
+
+    @Test
+    void deleteSchedule_returns204() throws Exception{
+        Doctor doctorOne = userTestUtil.createDoctor(1);
+        UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(doctorOne.getUser());
+
+        Schedule schedule = scheduleRepository.save(createDefaultSchedule(doctorOne));
+
+        mockMvc.perform(delete("/api/doctors/{doctorId}/schedules/{scheduleId}", doctorOne.getId(), schedule.getId())
+                        .with(authentication(auth)))
+                .andExpect(status().isNoContent());
+
+        assertTrue(scheduleRepository.findById(schedule.getId()).isEmpty(), "Schedule should be deleted");
+
+    }
+    
     private ScheduleRequest createDefaultScheduleRequest() {
         ScheduleRequest scheduleRequest = new ScheduleRequest();
         scheduleRequest.setDayOfWeek(DayOfWeek.MONDAY);
