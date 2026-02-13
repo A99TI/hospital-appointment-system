@@ -2,7 +2,9 @@ package com.hospital.system.appointments.controller.schedule;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hospital.system.appointments.entity.Doctor;
+import com.hospital.system.appointments.entity.Schedule;
 import com.hospital.system.appointments.enums.DayOfWeek;
+import com.hospital.system.appointments.repository.ScheduleRepository;
 import com.hospital.system.appointments.request.ScheduleRequest;
 import com.hospital.system.appointments.support.MvcEndpointTestSupport;
 import com.hospital.system.appointments.util.UserTestUtil;
@@ -15,7 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,11 +25,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.stream.Stream;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -39,6 +41,8 @@ public class ScheduleControllerIntegrationTest {
 
     @Autowired
     private WebApplicationContext webApplicationContext;
+    @Autowired
+    private ScheduleRepository scheduleRepository;
     @Autowired
     private MvcEndpointTestSupport mvcEndpointTestSupport;
     @Autowired
@@ -80,31 +84,64 @@ public class ScheduleControllerIntegrationTest {
         Doctor doctor1 = userTestUtil.createDoctor(1);
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(doctor1.getUser());
 
-        ScheduleRequest scheduleRequest = createDefaultSchedule();
+        ScheduleRequest scheduleRequest = createDefaultScheduleRequest();
 
         mockMvc.perform(post("/api/doctors/"+doctor1.getId()+"/schedules")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(scheduleRequest))
                 .with(authentication(auth)))
-                .andDo(print())
+
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.doctorId").value(doctor1.getId()))
-                .andExpect(jsonPath("$.dayOfWeek").value("MONDAY"))
-                .andExpect(jsonPath("$.startTime").value("09:30:00"))
-                .andExpect(jsonPath("$.endTime").value("17:30:00"))
-                .andExpect(jsonPath("$.maxPatients").value(30));
+                .andExpect(jsonPath("$.dayOfWeek").value(scheduleRequest.getDayOfWeek().toString()))
+                .andExpect(jsonPath("$.startTime").value(scheduleRequest.getStartTime().format(DateTimeFormatter.ISO_LOCAL_TIME)))
+                .andExpect(jsonPath("$.endTime").value(scheduleRequest.getEndTime().format(DateTimeFormatter.ISO_LOCAL_TIME)))
+                .andExpect(jsonPath("$.maxPatients").value(scheduleRequest.getMaxPatients()));
 
     }
 
-    private ScheduleRequest createDefaultSchedule() {
+    @Test
+    void getScheduleByDoctorId_returns200() throws Exception {
+        Doctor doctorOne = userTestUtil.createDoctor(1);
+        UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(doctorOne.getUser());
+
+        Schedule schedule =  scheduleRepository.save(createDefaultSchedule(doctorOne));
+
+        mockMvc.perform(get("/api/doctors/{doctorId}/schedules", doctorOne.getId())
+                        .with(authentication(auth)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").exists())
+                .andExpect(jsonPath("$[0].id").isNumber())
+                .andExpect(jsonPath("$[0].doctorId").value(doctorOne.getId()))
+                .andExpect(jsonPath("$[0].dayOfWeek").value(schedule.getDayOfWeek().toString()))
+                .andExpect(jsonPath("$[0].startTime").value(schedule.getStartTime().format(DateTimeFormatter.ISO_LOCAL_TIME)))
+                .andExpect(jsonPath("$[0].endTime").value(schedule.getEndTime().format(DateTimeFormatter.ISO_LOCAL_TIME)))
+                .andExpect(jsonPath("$[0].maxPatients").value(schedule.getMaxPatients()));
+
+
+    }
+
+    private ScheduleRequest createDefaultScheduleRequest() {
         ScheduleRequest scheduleRequest = new ScheduleRequest();
         scheduleRequest.setDayOfWeek(DayOfWeek.MONDAY);
-        scheduleRequest.setStartTime(LocalTime.of(9, 30));
-        scheduleRequest.setEndTime(LocalTime.of(17, 30));
+        scheduleRequest.setStartTime(LocalTime.of(9, 30,00));
+        scheduleRequest.setEndTime(LocalTime.of(17, 30,00));
         scheduleRequest.setMaxPatients(30);
         return scheduleRequest;
+    }
+
+    private Schedule createDefaultSchedule(Doctor doctor) {
+        Schedule schedule = new Schedule();
+        schedule.setDoctor(doctor);
+        schedule.setDayOfWeek(DayOfWeek.MONDAY);
+        schedule.setStartTime(LocalTime.of(9, 30,00));
+        schedule.setEndTime(LocalTime.of(17, 30,00));
+        schedule.setMaxPatients(30);
+        return schedule;
     }
 
 }
