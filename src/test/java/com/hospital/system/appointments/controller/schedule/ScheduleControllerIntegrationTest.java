@@ -3,6 +3,7 @@ package com.hospital.system.appointments.controller.schedule;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hospital.system.appointments.entity.Doctor;
 import com.hospital.system.appointments.entity.Schedule;
+import com.hospital.system.appointments.entity.User;
 import com.hospital.system.appointments.enums.DayOfWeek;
 import com.hospital.system.appointments.repository.ScheduleRepository;
 import com.hospital.system.appointments.request.ScheduleRequest;
@@ -103,14 +104,38 @@ public class ScheduleControllerIntegrationTest {
     }
 
     @Test
-    void getScheduleByDoctorId_returns200() throws Exception {
+    void getScheduleByDoctorId_asAdmin_returns200() throws Exception {
+        User adminOne = userTestUtil.createAdmin(1);
+        UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminOne);
+
+        Doctor doctorTwo = userTestUtil.createDoctor(2);
+        Schedule schedule =  scheduleRepository.save(createDefaultSchedule(doctorTwo));
+
+        mockMvc.perform(get("/api/doctors/{doctorId}/schedules", doctorTwo.getId())
+                        .with(authentication(auth)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").exists())
+                .andExpect(jsonPath("$[0].id").isNumber())
+                .andExpect(jsonPath("$[0].doctorId").value(doctorTwo.getId()))
+                .andExpect(jsonPath("$[0].dayOfWeek").value(schedule.getDayOfWeek().toString()))
+                .andExpect(jsonPath("$[0].startTime").value(schedule.getStartTime().format(DateTimeFormatter.ISO_LOCAL_TIME)))
+                .andExpect(jsonPath("$[0].endTime").value(schedule.getEndTime().format(DateTimeFormatter.ISO_LOCAL_TIME)))
+                .andExpect(jsonPath("$[0].maxPatients").value(schedule.getMaxPatients()));
+
+
+    }
+
+    @Test
+    void getMySchedule_return200() throws Exception{
         Doctor doctorOne = userTestUtil.createDoctor(1);
         UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(doctorOne.getUser());
 
         Schedule schedule =  scheduleRepository.save(createDefaultSchedule(doctorOne));
 
-        mockMvc.perform(get("/api/doctors/{doctorId}/schedules", doctorOne.getId())
-                        .with(authentication(auth)))
+        mockMvc.perform(get("/api/doctors/me/schedules")
+                .with(authentication(auth)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(1))
@@ -121,8 +146,16 @@ public class ScheduleControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].startTime").value(schedule.getStartTime().format(DateTimeFormatter.ISO_LOCAL_TIME)))
                 .andExpect(jsonPath("$[0].endTime").value(schedule.getEndTime().format(DateTimeFormatter.ISO_LOCAL_TIME)))
                 .andExpect(jsonPath("$[0].maxPatients").value(schedule.getMaxPatients()));
+    }
 
+    @Test
+    void getMySchedule_asAdmin_return403() throws Exception{
+        User adminOne = userTestUtil.createAdmin(1);
+        UsernamePasswordAuthenticationToken auth = userTestUtil.createAuthenticationToken(adminOne);
 
+        mockMvc.perform(get("/api/doctors/me/schedules")
+                        .with(authentication(auth)))
+                .andExpect(status().isForbidden());
     }
 
     private ScheduleRequest createDefaultScheduleRequest() {
